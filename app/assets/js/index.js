@@ -286,6 +286,7 @@ document.querySelector('#draw-generated-collision-mesh').addEventListener('click
 			const x = polygonData.readFloatLE(polygonDataPosition);
 			polygonDataPosition += 4;
 			const y = polygonData.readFloatLE(polygonDataPosition);
+			polygonDataPosition += 4;
 
 			polygon.push([x, y]);
 		}
@@ -298,12 +299,11 @@ document.querySelector('#draw-generated-collision-mesh').addEventListener('click
 	ctx.strokeStyle = 'blue';
 	ctx.lineWidth = 0.5;
 
-	// * WHY THIS NO WORK??
 	for (const polygon of polygons) {
 		ctx.beginPath();
-		ctx.moveTo(polygon[0][0], polygon[0][1]);
-		ctx.lineTo(polygon[1][0], polygon[1][1]);
-		ctx.lineTo(polygon[2][0], polygon[2][1]);
+		ctx.moveTo(polygon[0][0] + DISPLAY_PADDING, polygon[0][1] + DISPLAY_PADDING);
+		ctx.lineTo(polygon[1][0] + DISPLAY_PADDING, polygon[1][1] + DISPLAY_PADDING);
+		ctx.lineTo(polygon[2][0] + DISPLAY_PADDING, polygon[2][1] + DISPLAY_PADDING);
 		ctx.closePath();
 		ctx.stroke();
 	}
