@@ -1,0 +1,45 @@
+{
+  "name": "ita-bag",
+  "version": "1.0.0",
+  "description": "Utility tool for working with Nintendo Bagde Arcade PrizeCollection archives",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Jonathan Barrow",
+    "email": "jonbarrow1998@gmail.com",
+    "url": "https://jonbarrow.dev/"
+  },
+  "license": "AGPL-3.0-only",
+  "devDependencies": {
+    "electron": "^22.0.2",
+    "electron-builder": "^23.6.0",
+    "eslint": "^8.31.0",
+    "eslint-plugin-jsdoc": "^39.6.4"
+  },
+  "dependencies": {
+    "earcut": "^2.2.4"
+  },
+  "build": {
+    "productName": "Ita Bag",
+    "appId": "network.pretendo.ita-bag",
+    "directories": {
+      "output": "builds"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development"
+    },
+    "files": [
+      "!builds",
+      "!.gitignore",
+      "!README.md"
+    ]
+  }
+}
