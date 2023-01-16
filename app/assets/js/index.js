@@ -154,8 +154,8 @@ function distance(p1, p2) {
 canvas.addEventListener('mousemove', event => {
 	// * Adjust mouse position because of padding
 	const mousePoint = {
-		x: event.clientX-(DISPLAY_PADDING*2),
-		y: event.clientY-(DISPLAY_PADDING*2),
+		x: event.clientX - canvas.offsetLeft,
+		y: event.clientY - canvas.offsetTop,
 	};
 
 	closestPoint = points.reduce((a, b) => {
