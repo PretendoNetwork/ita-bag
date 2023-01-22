@@ -9,8 +9,6 @@
         "eslint:recommended",
         "plugin:jsdoc/recommended"
     ],
-    "overrides": [
-    ],
     "parserOptions": {
         "ecmaVersion": "latest"
     },
@@ -34,8 +32,5 @@
     },
     "plugins": [
         "jsdoc"
-    ],
-    "globals": {
-        "d3": "readonly"
-    }
+    ]
 }
