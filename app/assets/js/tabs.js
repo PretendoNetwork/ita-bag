@@ -36,6 +36,15 @@ async function createTab(filePath) {
 	closeButton.addEventListener('click', event => {
 		event.stopPropagation();
 
+		// TODO - Set an "edited" property on the tab, don't check a class for this
+		if (closeButton.querySelector('i').classList.contains('gg-asterisk')) {
+			const response = confirm('File has changes not yet saved. Changes will be lost. Continue?');
+
+			if (!response) {
+				return;
+			}
+		}
+
 		closeTab(filePath);
 	});
 
