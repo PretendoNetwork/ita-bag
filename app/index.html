@@ -6,15 +6,165 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>Document</title>
 
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap" rel="stylesheet">
+
+		<link href='https://css.gg/close-r.css' rel='stylesheet'>
+		<link href='https://css.gg/asterisk.css' rel='stylesheet'>
 		<link rel="stylesheet" href="assets/css/index.css">
+		<link rel="stylesheet" href="assets/css/file-system.css">
+		<link rel="stylesheet" href="assets/css/app.css">
+		<link rel="stylesheet" href="assets/css/editor.css">
+		<link rel="stylesheet" href="assets/css/prb-editor.css">
 	</head>
 	<body>
-		<button id="build-collision-mesh">Build Collision Mesh</button>
-		<button id="draw-generated-collision-mesh">Draw Built Collision Mesh</button>
-		<br>
-		<canvas id="canvas" width=200 height=200></canvas>
+		<div class="main">
+			<div class="file-system"></div>
+			<div class="app">
+				<div class="tabs"></div>
+				<div class="editors"></div>
+			</div>
+		</div>
 
-		<script src="assets/js/contour.js"></script> <!-- TODO - Update to use https://github.com/d3/d3-contour -->
+		<template data-for="prb">
+			<div class="editor prb-editor selected">
+				<div class="info">
+					<h1>Info</h1>
+					<div class="inputs">
+						<div class="prd-badge-id">
+							<label>
+								<span>Badge ID</span>
+								<br>
+								<input data-for="prd-badge-id" type="text">
+							</label>
+						</div>
+						<div class="prd-title-id">
+							<label>
+								<span>Title ID</span>
+								<br>
+								<input data-for="prd-title-id" type="text">
+							</label>
+						</div>
+						<div class="prd-category">
+							<label>
+								<span>Category</span>
+								<br>
+								<input data-for="prd-category" type="text">
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="images">
+					<h1>Images</h1>
+					<div class="inputs">
+						<div class="prb-set-image-buttons">
+							<button>Upload 32x32</button>
+							<button>Upload 64x64</button>
+							<button>Upload 128x128</button>
+							<button>Modify Collision</button>
+						</div>
+						<div class="prb-image-displays">
+							<img data-for="prb-image-32" src="https://picsum.photos/32" alt="">
+							<img data-for="prb-image-64" src="https://picsum.photos/64" alt="">
+							<img data-for="prb-image-128" src="https://picsum.photos/128" alt="">
+						</div>
+					</div>
+				</div>
+				<div class="names">
+					<h1>Display Names</h1>
+					<div class="inputs">
+						<label>
+							<span>Japanese</span>
+							<br>
+							<input data-for="prd-language-japanese" type="text">
+						</label>
+						<label>
+							<span>English</span>
+							<br>
+							<input data-for="prd-language-english" type="text">
+						</label>
+						<label>
+							<span>French</span>
+							<br>
+							<input data-for="prd-language-french" type="text">
+						</label>
+						<label>
+							<span>German</span>
+							<br>
+							<input data-for="prd-language-german" type="text">
+						</label>
+						<label>
+							<span>Italian</span>
+							<br>
+							<input data-for="prd-language-italian" type="text">
+						</label>
+						<label>
+							<span>Spanish</span>
+							<br>
+							<input data-for="prd-language-spanish" type="text">
+						</label>
+						<label>
+							<span>Chinese (simple)</span>
+							<br>
+							<input data-for="prd-language-chinese-simple" type="text">
+						</label>
+						<label>
+							<span>Korean</span>
+							<br>
+							<input data-for="prd-language-korean" type="text">
+						</label>
+						<label>
+							<span>Dutch</span>
+							<br>
+							<input data-for="prd-language-dutch" type="text">
+						</label>
+						<label>
+							<span>Portuguese</span>
+							<br>
+							<input data-for="prd-language-portuguese" type="text">
+						</label>
+						<label>
+							<span>Russian</span>
+							<br>
+							<input data-for="prd-language-russian" type="text">
+						</label>
+						<label>
+							<span>Chinese (traditional)</span>
+							<br>
+							<input data-for="prd-language-chinese-traditional" type="text">
+						</label>
+						<label>
+							<span>Unknown 1</span>
+							<br>
+							<input data-for="prd-language-unknown-1" type="text">
+						</label>
+						<label>
+							<span>Unknown 2</span>
+							<br>
+							<input data-for="prd-language-unknown-2" type="text">
+						</label>
+						<label>
+							<span>Unknown 3</span>
+							<br>
+							<input data-for="prd-language-unknown-3" type="text">
+						</label>
+						<label>
+							<span>Unknown 4</span>
+							<br>
+							<input data-for="prd-language-unknown-4" type="text">
+						</label>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/contour.js"></script> <!-- TODO - Update to use https://github.com/d3/d3-contour maybe? -->
 		<script src="assets/js/index.js"></script>
+		<script src="assets/js/file-system.js"></script>
+		<script src="assets/js/archive.js"></script>
+		<script src="assets/js/tabs.js"></script>
+		<script src="assets/js/prb-editor.js"></script>
 	</body>
 </html>
