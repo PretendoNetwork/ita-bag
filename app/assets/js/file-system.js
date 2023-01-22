@@ -1,0 +1,72 @@
+/**
+ * Creates a file system tree on the current branch
+ *
+ * @param {object} object Base object for the tree to be stored on to
+ * @param {string} name Name of the folder/branch
+ * @param {string} virtualPath virtual file path to be stored on each child
+ * @returns {Element} <details> element containing the current tree branch
+ */
+function createFileSystemTree(object, name='Root', virtualPath='') {
+	const root = document.createElement('details');
+	const summary = document.createElement('summary');
+
+	summary.appendChild(document.createTextNode(name));
+	root.appendChild(summary);
+
+	summary.addEventListener('click', setSelectedFolder);
+
+	for (const key in object) {
+		const value = object[key];
+		let childElement;
+
+		let newVirtualPath = `${virtualPath}/${key}`;
+
+		if (value.constructor === Object) {
+			// * Value is an folder, extend the tree
+			childElement = createFileSystemTree(value, key, newVirtualPath);
+		} else {
+			// * Value is a file
+			childElement = document.createElement('span');
+			childElement.appendChild(document.createTextNode(key));
+			childElement.addEventListener('click', openFile);
+		}
+
+		childElement.setAttribute('data-v-path', newVirtualPath);
+		root.appendChild(childElement);
+	}
+
+	return root;
+}
+
+/**
+ * Sets the clicked virtual folder to be selected
+ *
+ * @param {event} event Mouse click event
+ */
+function setSelectedFolder({ target }) {
+	const currentSelectedFolder = document.querySelector('summary.selected');
+	if (currentSelectedFolder) {
+		currentSelectedFolder.classList.remove('selected');
+	}
+
+	target.classList.add('selected');
+}
+
+/**
+ * Opens the clicked file
+ *
+ * @param {event} event Mouse click event
+ */
+function openFile({ target }) {
+	const filePath = target.getAttribute('data-v-path');
+
+	const existingTab = document.querySelector(`.tab[data-for="${filePath}"]`);
+
+	if (existingTab) {
+		openTab(filePath);
+	} else {
+		createTab(filePath);
+	}
+}
+
+// TODO - Export virtual file system back to disk
