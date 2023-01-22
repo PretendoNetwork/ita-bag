@@ -39,6 +39,14 @@ async function populatePRBSTab(editor) {
 	//editor.querySelector('input[data-for="prd-language-unknown-4"]').value = badge.displayNames.unknown4;
 
 
+	const inputs = editor.querySelectorAll('input[type="text"]');
+
+	for (const input of inputs) {
+		input.addEventListener('input', () => {
+			document.querySelector('.tab.selected .close-button i').classList.remove('gg-close-r');
+			document.querySelector('.tab.selected .close-button i').classList.add('gg-asterisk');
+		});
+	}
 }
 
 // TODO - Saving back to the virtual file system
