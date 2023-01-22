@@ -21,7 +21,10 @@
     "eslint-plugin-jsdoc": "^39.6.4"
   },
   "dependencies": {
-    "earcut": "^2.2.4"
+    "@themezernx/sarclib": "^1.0.2",
+    "@themezernx/yaz0lib": "^1.0.2",
+    "earcut": "^2.2.4",
+    "jimp": "^0.16.2"
   },
   "build": {
     "productName": "Ita Bag",
