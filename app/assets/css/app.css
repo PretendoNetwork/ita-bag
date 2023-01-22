@@ -50,6 +50,10 @@
 	margin-left: 5px;
 }
 
+.app .tabs .tab .saved-icon {
+	margin-right: 10px;
+}
+
 .app .tabs .tab .close-button {
 	margin-right: 5px;
 }
