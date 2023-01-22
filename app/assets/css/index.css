@@ -1,8 +1,55 @@
+:root {
+	--file-system-width: 20vw;
+	--app-width: 80vw;
+	--grid-gap: 0px;
+	--grid-gap-corrected: calc(var(--grid-gap) * 2);
+	--true-file-system-width: calc(var(--file-system-width) - var(--grid-gap-corrected));
+	--true-app-width: calc(var(--app-width) - var(--grid-gap-corrected));
+	--main-height: calc(100vh - var(--grid-gap-corrected))
+}
+
 body {
+	margin: 0;
 	background-color: ivory;
 }
 
-canvas {
-	margin: 50px;
-	border: 1px solid red;
+.main {
+	display: grid;
+	grid-template-columns: var(--true-file-system-width) var(--true-app-width);
+	grid-gap: var(--grid-gap);
+	height: var(--main-height);
+}
+
+.file-system {
+	max-width: var(--true-file-system-width);
+	overflow-x: scroll;
+}
+
+.app {
+	max-width: var(--true-app-width);
+}
+
+button {
+	appearance: none;
+	border: 0;
+	border-radius: 6px;
+	font-size: 1rem;
+	color: white;
+	padding: 4px 48px;
+	background: #373C65;
+	cursor: pointer;
+}
+
+input[type="text"] {
+	appearance: none;
+	display: block;
+	font-size: 1rem;
+	background-color: #373C65;
+	border: none;
+	border-radius: 4px;
+	padding: 4px;
+	color: white;
+}
+input[type="text"]:focus {
+	outline: none;
 }

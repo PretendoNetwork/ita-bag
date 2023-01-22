@@ -1,3 +1,6 @@
+// * UNUSED ATM, WILL BE BROUGHT BACK FOR THE COLLISION EDITOR
+// ! DO NOT REMOVE
+
 const earcut = require('earcut');
 
 const canvas = document.getElementById('canvas');
@@ -35,6 +38,8 @@ badgeImage.addEventListener('load', () => {
 	badgeImageData = ctx.getImageData(0, 0, cw, ch).data;
 
 	points = d3.geom.contour(defineNonTransparent);
+	//console.log(badgeImageData.filter(defineNonTransparent))
+	//points = contours(badgeImageData)
 
 	ctx.strokeStyle = BORDER_COLOR;
 	ctx.lineWidth = 2;

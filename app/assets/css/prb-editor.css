@@ -1,0 +1,65 @@
+/* GENERAL EDITOR LAYOUT */
+
+.prb-editor {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 0.1fr 0.9fr;
+	gap: 0px 0px;
+	grid-template-areas:
+		"prd-info prd-images"
+		"prd-names prd-names";
+}
+
+.prb-editor .info { grid-area: prd-info; }
+.prb-editor .images { grid-area: prd-images; }
+.prb-editor .names { grid-area: prd-names; }
+
+/* INFO SECTION LAYOUT */
+
+.prb-editor .info .inputs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr 1fr;
+	gap: 10px 0px;
+	grid-template-areas:
+		"prd-badge-id prd-category"
+		"prd-title-id prd-category";
+}
+
+.prb-editor .info .inputs .prd-badge-id { grid-area: prd-badge-id; }
+.prb-editor .info .inputs .prd-title-id { grid-area: prd-title-id; }
+.prb-editor .info .inputs .prd-category { grid-area: prd-category; }
+
+/* IMAGES SECTION LAYOUT */
+
+.prb-editor .images .inputs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr;
+	gap: 0px 80px;
+	grid-auto-flow: row;
+	grid-template-areas:
+		"prb-set-image-buttons prb-image-displays";
+}
+
+.prb-editor .images .inputs .prb-set-image-buttons {
+	grid-area: prb-set-image-buttons;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr 1fr 1fr 1fr;
+	gap: 10px 0px;
+	grid-template-areas:
+		"prb-set-32"
+		"prb-set-64"
+		"prb-set-128"
+		"prb-modify-collision";
+}
+.prb-editor .images .inputs .prb-image-displays { grid-area: prb-image-displays; }
+
+/* DISPLAY NAMES SECTION LAYOUT */
+
+.prb-editor .names .inputs {
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(4, 1fr);
+}
