@@ -33,10 +33,12 @@ async function populatePRBSTab(editor) {
 	editor.querySelector('input[data-for="prd-language-portuguese"]').value = badge.displayNames.portuguese;
 	editor.querySelector('input[data-for="prd-language-russian"]').value = badge.displayNames.russian;
 	editor.querySelector('input[data-for="prd-language-chinese-traditional"]').value = badge.displayNames.chineseTraditional;
-	editor.querySelector('input[data-for="prd-language-unknown-1"]').value = badge.displayNames.unknown1;
-	editor.querySelector('input[data-for="prd-language-unknown-2"]').value = badge.displayNames.unknown2;
-	editor.querySelector('input[data-for="prd-language-unknown-3"]').value = badge.displayNames.unknown3;
-	editor.querySelector('input[data-for="prd-language-unknown-4"]').value = badge.displayNames.unknown4;
+	//editor.querySelector('input[data-for="prd-language-unknown-1"]').value = badge.displayNames.unknown1;
+	//editor.querySelector('input[data-for="prd-language-unknown-2"]').value = badge.displayNames.unknown2;
+	//editor.querySelector('input[data-for="prd-language-unknown-3"]').value = badge.displayNames.unknown3;
+	//editor.querySelector('input[data-for="prd-language-unknown-4"]').value = badge.displayNames.unknown4;
+
+
 }
 
 // TODO - Saving back to the virtual file system
