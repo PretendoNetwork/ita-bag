@@ -3,10 +3,10 @@ const PRBS = require('../prbs'); // * Relative to the html file loading the scri
 /**
  * Populates a newly created PRBS file editor
  *
- * @param {string} filePath virtual file path for finding the element created from the virtual archive
+ * @param {Element} editor File editor element to be populated
  */
-async function populatePRBSTab(filePath) {
-	const editor = document.querySelector(`.editor[data-for="${filePath}"]`);
+async function populatePRBSTab(editor) {
+	const filePath = editor.getAttribute('data-for');
 	const fileData = pathToObjectValue(VIRTUAL_ARCHIVE, filePath.substring(1));
 
 	const badge = new PRBS(fileData);
@@ -38,3 +38,5 @@ async function populatePRBSTab(filePath) {
 	editor.querySelector('input[data-for="prd-language-unknown-3"]').value = badge.displayNames.unknown3;
 	editor.querySelector('input[data-for="prd-language-unknown-4"]').value = badge.displayNames.unknown4;
 }
+
+// TODO - Saving back to the virtual file system

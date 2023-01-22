@@ -46,26 +46,30 @@ async function createTab(filePath) {
 	const editor = document.querySelector(`template[data-for="${fileType}"]`).content.firstElementChild.cloneNode(true);
 	editor.setAttribute('data-for', filePath);
 
-	document.querySelector('.tabs').appendChild(tab);
-	document.querySelector('.editors').appendChild(editor);
+	try {
+		await populateTab(editor);
 
-	await populateTab(filePath);
+		document.querySelector('.tabs').appendChild(tab);
+		document.querySelector('.editors').appendChild(editor);
 
-	openTab(filePath);
+		openTab(filePath);
+	} catch (error) {
+		alert(error.message);
+	}
 }
 
 /**
  * Populates a new editor tab and editor
  *
- * @param {string} filePath Virtual file path for creating elements with file metadata
+ * @param {Element} editor File editor element to be populated
  */
-async function populateTab(filePath) {
-	const fileName = filePath.split('/').pop();
+async function populateTab(editor) {
+	const fileName = editor.getAttribute('data-for').split('/').pop();
 	const fileType = fileName.split('.').pop().toLowerCase();
 
 	switch (fileType) {
 	case 'prb':
-		await populatePRBSTab(filePath);
+		await populatePRBSTab(editor);
 		break;
 	}
 }
