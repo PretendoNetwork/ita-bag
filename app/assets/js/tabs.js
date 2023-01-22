@@ -28,6 +28,10 @@ async function createTab(filePath) {
 
 	tab.setAttribute('data-for', filePath);
 
+	// TODO - Create a fancier CSS-based tooltip
+	tab.setAttribute('title', fileName);
+	closeButton.setAttribute('title', 'Close editor');
+
 	closeButton.appendChild(closeButtonIcon);
 	name.appendChild(document.createTextNode(fileName));
 	tab.appendChild(name);
