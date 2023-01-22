@@ -1,7 +1,17 @@
 :root {
-	/* TODO - Change the min size */
-	--tab-min-size: 150px;
-	--tab-max-size: 150px;
+
+	/* Tab options */
+	--tab-min-size: 125px;
+	--tab-max-size: 250px;
+
+	/* Colors */
+	--color-dark: hsl(233, 46%, 14%);
+	--color-medium: hsl(234, 36%, 21%);
+	--color-light: hsl(232, 26%, 22%);
+
+	--color-scroll-dark: hsl(233, 46%, 24%);
+	--color-scroll-medium: hsl(234, 36%, 31%);
+	--color-scroll-light: hsl(232, 26%, 32%);
 
 	--ggs: 0.6; /* Used by the https://css.gg/ icons to resize */
 }
@@ -9,7 +19,7 @@
 .app {
 	display: grid;
 	grid-template-rows: 0.07fr 0.93fr;
-	background-color: #23274A;
+	background-color: var(--color-medium);
 	font-family: 'Poppins', sans-serif;
 }
 
@@ -19,7 +29,8 @@
 	grid-auto-flow: column;
 	grid-auto-columns: minmax(var(--tab-min-size), var(--tab-max-size));
 	overflow-x: auto;
-	background-color: #131733;
+	background-color: var(--color-dark);
+	height: 40px;
 }
 
 .app .tabs .tab {
@@ -28,22 +39,22 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	background-color: #131733;
+	background-color: var(--color-dark);
 	color: white;
 	cursor: pointer;
 }
 
 .app .tabs .tab.selected {
-	background-color: #23274A;
+	background-color: var(--color-medium);
 }
 
 .app .tabs .tab:not(.selected):hover {
-	background-color: #2a2e47;
+	background-color: var(--color-light);
 }
 
 .app .tabs .tab .file-name {
 	display: inline-block;
-	max-width: 100px;
+	max-width: var(--tab-max-size) - 15px;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	white-space: nowrap;
@@ -65,3 +76,29 @@
 .app .editors .editor:not(.selected) {
 	display: none;
 }
+
+/* Scrollbar */
+
+::-webkit-scrollbar{
+    height: 6px;
+    width: 6px;
+    background: var(--color-scroll-dark);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-scroll-dark);
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-scroll-medium); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scroll-light);
+}
+
+/* Fix white corner*/
+::-webkit-scrollbar-corner { background: var(--color-scroll-dark); }
