@@ -5,13 +5,18 @@
 	--tab-max-size: 250px;
 
 	/* Colors */
-	--color-dark: hsl(233, 46%, 14%);
-	--color-medium: hsl(234, 36%, 21%);
-	--color-light: hsl(232, 26%, 22%);
+	--color-bg-dark: #131733;
+	--color-bg-dark-medium: #171B37;
+	--color-bg-medium: #1B1F3B;
+	--color-bg-light: #23274A;
 
-	--color-scroll-dark: hsl(233, 46%, 24%);
-	--color-scroll-medium: hsl(234, 36%, 31%);
-	--color-scroll-light: hsl(232, 26%, 32%);
+	--color-scroll-dark: #212859;
+	--color-scroll-medium: #33386c;
+	--color-scroll-light: #3c4267;
+
+	--color-highlight-dark: #673DB6;
+	--color-highlight-medium: #9D6FF3;
+	--color-highlight-light: #A185D6;
 
 	--ggs: 0.6; /* Used by the https://css.gg/ icons to resize */
 }
@@ -19,7 +24,7 @@
 .app {
 	display: grid;
 	grid-template-rows: 0.07fr 0.93fr;
-	background-color: var(--color-medium);
+	background-color: var(--color-bg-medium);
 	font-family: 'Poppins', sans-serif;
 }
 
@@ -29,8 +34,8 @@
 	grid-auto-flow: column;
 	grid-auto-columns: minmax(var(--tab-min-size), var(--tab-max-size));
 	overflow-x: auto;
-	background-color: var(--color-dark);
-	height: 40px;
+	background-color: var(--color-bg-dark-medium);
+	height: 35px;
 }
 
 .app .tabs .tab {
@@ -39,17 +44,17 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	background-color: var(--color-dark);
+	background-color: var(--color-bg-dark);
 	color: white;
 	cursor: pointer;
 }
 
 .app .tabs .tab.selected {
-	background-color: var(--color-medium);
+	background-color: var(--color-bg-medium);
 }
 
 .app .tabs .tab:not(.selected):hover {
-	background-color: var(--color-light);
+	background-color: var(--color-bg-light);
 }
 
 .app .tabs .tab .file-name {
@@ -62,7 +67,7 @@
 }
 
 .app .tabs .tab .saved-icon {
-	margin-right: 10px;
+	margin-right: 2px;
 }
 
 .app .tabs .tab .close-button {
