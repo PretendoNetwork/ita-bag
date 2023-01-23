@@ -103,7 +103,7 @@ class RGB565 {
 						const z = Z_VALUE_LOOKUP_TABLE[tileX][tileY];
 
 						// * Actual color index
-						const i = z + (tileWalkerY * 8 * height) + (tileWalkerX * width);
+						const i = z + (tileWalkerY * 8 * height) + (tileWalkerX * 64);
 
 						const rgb = this.rgb565.readUint16LE(i * 2);
 
