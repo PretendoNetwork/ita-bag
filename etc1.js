@@ -272,7 +272,7 @@ class ETC1 {
 			height
 		});
 
-		return image.getBufferAsync(Jimp.MIME_PNG);
+		return image.getBase64Async(Jimp.MIME_PNG);
 	}
 }
 
