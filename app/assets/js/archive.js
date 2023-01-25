@@ -1,5 +1,5 @@
 const { SarcFile } = require('@themezernx/sarclib/dist');
-const { decompressYaz0 } = require('@themezernx/yaz0lib/dist');
+const { decompressYaz0, compressYaz0 } = require('@themezernx/yaz0lib/dist');
 
 export const VIRTUAL_ARCHIVE = {};
 
@@ -42,7 +42,7 @@ export function sarcToObject(sarc, root) {
 
 		if (extension === 'szs' && data.subarray(0, 4).toString() === 'Yaz0') {
 			fileName = fileNameParts.join('.');
-
+			console.log(`Decompressing ${fileName}`)
 			data = decompressYaz0(data);
 		}
 
@@ -78,7 +78,8 @@ export function objectToSarc(object, sarc=new SarcFile, path='') {
 			childElement = objectToSarc(value, sarc, newPath);
 		} else {
 			// * Value is a file, add it to the sarc
-			sarc.addRawFile(value, newPath);
+			console.log(`Compressing ${newPath}.szs`)
+			sarc.addRawFile(compressYaz0(value, 0, 1), `${newPath}.szs`);
 		}
 	}
 	return sarc;

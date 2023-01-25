@@ -84,6 +84,12 @@ function openFile({ target }) {
 export function importSARC(path) {
 	const rootSarc = new SarcFile();
 	
+	for (var prop in VIRTUAL_ARCHIVE) {
+		if (VIRTUAL_ARCHIVE.hasOwnProperty(prop)) {
+			delete VIRTUAL_ARCHIVE[prop];
+		}
+	}
+	
 	try {
 	rootSarc.loadFrom(path);
 	} catch (error) {
