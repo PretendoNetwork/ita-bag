@@ -31,7 +31,6 @@ class PRBS {
 		this.stream.skip(0x4); // * Skip display names end address
 		const images32x32And64x64StartAddress = this.stream.readUInt32LE();
 		this.stream.skip(0x4); // * Skip 32x32 and 64x64 images end address
-		const optional32x32And64x64ImagesStartAddress = this.stream.readUInt32LE();
 		this.stream.skip(0x4); // * Skip optional images end address
 		const image128x128StartAddress = this.stream.readUInt32LE();
 		this.stream.skip(0x4); // * Skip 128x128 image end address
@@ -40,14 +39,8 @@ class PRBS {
 
 		this.readHeader(headerStartAddress);
 
-		if (this.horizontalTiles !== 1 || this.verticalTiles !== 1) {
-			// TODO - Support this
-			throw new Error('Badges larger than 1x1 not currently supported');
-		}
-
 		this.readDisplayNames(displayNamesStartAddress);
 		this.read32x32And64x64Images(images32x32And64x64StartAddress);
-		this.readOptional32x32And64x64Images(optional32x32And64x64ImagesStartAddress);
 		this.read128x128Image(image128x128StartAddress);
 		this.readCollisionData(collisionDataStartAddress);
 	}
@@ -103,17 +96,10 @@ class PRBS {
 		const rgb5656_32x32 = this.stream.readBytes(0x800);
 		const a4_32x32 = this.stream.readBytes(0x200);
 
-		// * Optional images not supported atm
-
 		this.images = {
 			small: new RGB565(32, rgb5656_32x32, a4_32x32),
 			medium: new RGB565(64, rgb5656_64x64, a4_64x64)
 		};
-	}
-
-	readOptional32x32And64x64Images(startAddress) {
-		this.stream.seek(startAddress);
-		// TODO - Do this
 	}
 
 	read128x128Image(startAddress) {
