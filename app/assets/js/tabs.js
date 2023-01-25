@@ -34,7 +34,7 @@ async function createTab(filePath) {
 	// TODO - Create a fancier CSS-based tooltip
 	tab.setAttribute('title', fileName);
 	closeButton.setAttribute('title', 'Close editor');
-	
+
 	closeButton.appendChild(closeButtonIcon);
 	name.appendChild(document.createTextNode(fileName));
 	tab.appendChild(name);
@@ -44,7 +44,7 @@ async function createTab(filePath) {
 	closeButton.addEventListener('click', event => {
 		event.stopPropagation();
 
-		if (tab.modified == true) {
+		if (tab.modified === true) {
 			const response = confirm('File has changes not yet saved. Changes will be lost. Continue?');
 
 			if (!response) {
