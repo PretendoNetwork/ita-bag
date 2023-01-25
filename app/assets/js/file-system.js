@@ -1,4 +1,9 @@
 import { createTab, openTab } from './tabs.js';
+import { VIRTUAL_ARCHIVE, sarcToObject, objectToSarc } from './archive.js';
+
+const { ipcRenderer } = require('electron');
+const { SarcFile } = require('@themezernx/sarclib/dist');
+
 
 /**
  * Creates a file system tree on the current branch
@@ -71,4 +76,38 @@ function openFile({ target }) {
 	}
 }
 
-// TODO - Export virtual file system back to disk
+/**
+ * Import a selected archive file
+ *
+ * @param {String} path Path to load from
+ */
+export function importSARC(path) {
+	const rootSarc = new SarcFile();
+	
+	try {
+	rootSarc.loadFrom(path);
+	} catch (error) {
+		alert(`Error loading SARC archive: ${error.message}!`);
+		return;
+	}
+	sarcToObject(rootSarc, VIRTUAL_ARCHIVE);
+
+	const tree = createFileSystemTree(VIRTUAL_ARCHIVE);
+
+	const fs = document.querySelector('.file-system');
+	while (fs.firstChild) {
+		fs.removeChild(fs.firstChild);
+	}
+
+	document.querySelector('.file-system').appendChild(tree);
+}
+
+/**
+ * Export the current archive file
+ *
+ * @param {String} path Path to save to
+ */
+export function exportSARC(path) {
+	const sarc = objectToSarc(VIRTUAL_ARCHIVE);
+	sarc.saveTo(path, 0);
+}

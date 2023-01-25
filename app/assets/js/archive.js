@@ -1,11 +1,6 @@
 const { SarcFile } = require('@themezernx/sarclib/dist');
 const { decompressYaz0 } = require('@themezernx/yaz0lib/dist');
 
-import { createFileSystemTree } from './file-system.js';
-
-const rootSarc = new SarcFile();
-rootSarc.loadFrom(__dirname + '/../data_v131_USA.sarc');
-
 export const VIRTUAL_ARCHIVE = {};
 
 /**
@@ -14,7 +9,7 @@ export const VIRTUAL_ARCHIVE = {};
  * @param {SarcFile} sarc SARC file to unpack
  * @param {object} root Destination object
  */
-function sarcToObject(sarc, root) {
+export function sarcToObject(sarc, root) {
 	for (const entry of sarc.getFiles()) {
 		const parts = entry.name.split('/');
 		let fileName = parts.pop();
@@ -61,8 +56,30 @@ function sarcToObject(sarc, root) {
 	}
 }
 
-sarcToObject(rootSarc, VIRTUAL_ARCHIVE);
+/**
+ * Packs an object into a SARC archive
+ *
+ * @param {object} root Object to pack
+ * @param {SarcFile} sarc SARC destination
+ * @param {String} currentPath Path of current object to save
+ */
+export function objectToSarc(object, sarc=new SarcFile, path='') {
+	let childElement;
 
-const tree = createFileSystemTree(VIRTUAL_ARCHIVE);
+	for (const key in object) {
+		const value = object[key];
+		let childElement;
+		let newPath;
 
-document.querySelector('.file-system').appendChild(tree);
+		if(path != '') { newPath = `${path}/${key}` } else {newPath = key}
+
+		if (value.constructor === Object) {
+			// * Value is a folder, keep iterating
+			childElement = objectToSarc(value, sarc, newPath);
+		} else {
+			// * Value is a file, add it to the sarc
+			sarc.addRawFile(value, newPath);
+		}
+	}
+	return sarc;
+}

@@ -55,3 +55,6 @@ export async function populatePRBSTab(editor) {
 }
 
 // TODO - Saving back to the virtual file system
+export async function savePRBSTab(editor) {
+console.log("SAVE TAB");
+}

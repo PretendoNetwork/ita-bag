@@ -1,4 +1,4 @@
-import { populatePRBSTab } from './prb-editor.js';
+import { populatePRBSTab, savePRBSTab } from './prb-editor.js';
 
 const SUPPORTED_FILE_TYPES = [
 	'prb'
@@ -88,6 +88,26 @@ async function populateTab(editor) {
 	switch (fileType) {
 	case 'prb':
 		await populatePRBSTab(editor);
+		break;
+	}
+}
+
+/**
+ * Saves the current tab
+ *
+ */
+export async function saveCurrentTab() {
+	const selectedTab = document.querySelector('.tab.selected');
+	const selectedEditor = document.querySelector('.editor.selected');
+
+	if((selectedTab || selectedEditor) == null) { return };
+	
+	const fileName = selectedEditor.getAttribute('data-for').split('/').pop();
+	const fileType = fileName.split('.').pop().toLowerCase();
+
+	switch (fileType) {
+	case 'prb':
+		await savePRBSTab(selectedEditor);
 		break;
 	}
 }
