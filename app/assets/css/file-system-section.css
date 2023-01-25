@@ -1,0 +1,90 @@
+/** Largely taken from https://github.com/lunu-bounir/tree.js/blob/master/tree.css **/
+
+.file-system {
+  user-select: none;
+  background-color: var(--color-bg-dark);
+}
+
+.file-system span,
+.file-system summary {
+  display: block;
+  width: fit-content;
+  border: solid 1px transparent;
+  padding: 0 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.file-system span {
+  text-decoration: none;
+  color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+.file-system summary {
+  list-style-type: none;
+  background-color: var(--color-scroll-medium);
+  border-radius: 5px;
+  outline: none;
+  color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  font-size: 14px;
+}
+
+.file-system details > :not(details),
+.file-system details {
+  position: relative;
+}
+
+.file-system details :not(summary) {
+  margin-left: 20px;
+}
+
+.file-system details:first-of-type {
+  margin-left: 20px;
+}
+
+.file-system details::before,
+.file-system details > :not(details)::before {
+  content: '';
+  width: 10px;
+  display: block;
+  position: absolute;
+}
+
+.file-system details::before,
+.file-system details > :not(details)::before {
+  background: url('../image/icons/file.svg') center center / 12px 12px no-repeat;
+  left: -14px;
+  top: 0.1px;
+  width: 16px;
+  height: 16px;
+}
+
+.file-system details::before {
+  top: 0;
+  height: 100%;
+  background-repeat: repeat-y;
+  left: 5px;
+  z-index: -1;
+}
+
+.file-system details > summary::before {
+  background: url('../image/icons/add-r.svg') center center / 12px 12px no-repeat;
+  left: -18px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+.file-system details[open] > summary::before {
+  background-image: url('../image/icons/remove-r.svg');
+}
+
+.file-system summary.selected {
+  border-color: var(--color-highlight-light);
+  z-index: 1;
+}
