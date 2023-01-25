@@ -17,9 +17,11 @@ async function populatePRBSTab(editor) {
 
 	const smallImage = await badge.images.small.toPNGBase64URI();
 	const mediumImage = await badge.images.medium.toPNGBase64URI();
+	const largeImage = await badge.images.large.toPNGBase64URI();
 
 	editor.querySelector('img[data-for="prb-image-32"]').src = smallImage;
 	editor.querySelector('img[data-for="prb-image-64"]').src = mediumImage;
+	editor.querySelector('img[data-for="prb-image-128"]').src = largeImage;
 
 	editor.querySelector('input[data-for="prd-language-japanese"]').value = badge.displayNames.japanese;
 	editor.querySelector('input[data-for="prd-language-english"]').value = badge.displayNames.english;

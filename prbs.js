@@ -1,5 +1,6 @@
 const Stream = require('./stream');
 const RGB565 = require('./rgb565');
+const ETC1 = require('./etc1');
 
 const MAGIC = Buffer.from('PRBS');
 
@@ -117,6 +118,13 @@ class PRBS {
 
 	read128x128Image(startAddress) {
 		this.stream.seek(startAddress);
+
+		const etc1a4_128x128 = this.stream.readBytes(0x4000);
+
+		// TODO - Use A8 data
+		const a8_128x128 = this.stream.readBytes(0x4000);
+
+		this.images.large = new ETC1(128, etc1a4_128x128, true);
 	}
 
 	readCollisionData(startAddress) {
