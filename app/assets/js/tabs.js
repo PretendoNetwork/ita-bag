@@ -97,7 +97,7 @@ async function populateTab(editor) {
  *
  * @param {string} filePath Virtual file path for finding elements with file metadata
  */
-function openTab(filePath) {
+export function openTab(filePath) {
 	document.querySelector('.tab.selected')?.classList.remove('selected');
 	document.querySelector('.editor.selected')?.classList.remove('selected');
 
