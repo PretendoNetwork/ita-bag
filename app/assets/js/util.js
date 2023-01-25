@@ -5,6 +5,6 @@
  * @param {string} delimiter Path delimiter
  * @returns {Buffer} file data buffer
  */
-function pathToObjectValue(object, path, delimiter='/') {
+export function pathToObjectValue(object, path, delimiter='/') {
 	return path.split(delimiter).reduce((a, v) => a[v], object);
 }

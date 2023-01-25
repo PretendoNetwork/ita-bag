@@ -1,3 +1,5 @@
+import { populatePRBSTab } from './prb-editor.js';
+
 const SUPPORTED_FILE_TYPES = [
 	'prb'
 ];
@@ -7,7 +9,7 @@ const SUPPORTED_FILE_TYPES = [
  *
  * @param {string} filePath Virtual file path for creating elements with file metadata
  */
-async function createTab(filePath) {
+export async function createTab(filePath) {
 	const fileName = filePath.split('/').pop();
 	const fileType = fileName.split('.').pop().toLowerCase();
 

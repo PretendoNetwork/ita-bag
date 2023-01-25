@@ -1,3 +1,6 @@
+import { pathToObjectValue } from './util.js';
+import { VIRTUAL_ARCHIVE } from './archive.js';
+
 const PRBS = require('../prbs'); // * Relative to the html file loading the script
 
 /**
@@ -5,7 +8,7 @@ const PRBS = require('../prbs'); // * Relative to the html file loading the scri
  *
  * @param {Element} editor File editor element to be populated
  */
-async function populatePRBSTab(editor) {
+export async function populatePRBSTab(editor) {
 	const filePath = editor.getAttribute('data-for');
 	const fileData = pathToObjectValue(VIRTUAL_ARCHIVE, filePath.substring(1));
 

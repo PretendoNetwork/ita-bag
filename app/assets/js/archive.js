@@ -1,10 +1,12 @@
 const { SarcFile } = require('@themezernx/sarclib/dist');
 const { decompressYaz0 } = require('@themezernx/yaz0lib/dist');
 
+import { createFileSystemTree } from './file-system.js';
+
 const rootSarc = new SarcFile();
 rootSarc.loadFrom(__dirname + '/../data_v131_USA.sarc');
 
-const VIRTUAL_ARCHIVE = {};
+export const VIRTUAL_ARCHIVE = {};
 
 /**
  * Unpacks a SARC archive into the given object

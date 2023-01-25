@@ -1,3 +1,5 @@
+import { createTab, openTab } from './tabs.js';
+
 /**
  * Creates a file system tree on the current branch
  *
@@ -6,7 +8,7 @@
  * @param {string} virtualPath virtual file path to be stored on each child
  * @returns {Element} <details> element containing the current tree branch
  */
-function createFileSystemTree(object, name='Root', virtualPath='') {
+export function createFileSystemTree(object, name='Root', virtualPath='') {
 	const root = document.createElement('details');
 	const summary = document.createElement('summary');
 

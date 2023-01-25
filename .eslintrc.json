@@ -10,6 +10,7 @@
         "plugin:jsdoc/recommended"
     ],
     "parserOptions": {
+        "sourceType": "module",
         "ecmaVersion": "latest"
     },
     "rules": {
