@@ -18,18 +18,18 @@ async function createTab(filePath) {
 
 	const tab = document.createElement('div');
 	const name = document.createElement('span');
-	const savedIcon = document.createElement('i');
+	const modifiedIcon = document.createElement('i');
 	const closeButton = document.createElement('span');
 	const closeButtonIcon = document.createElement('i');
 
 	tab.classList.add('tab');
 	name.classList.add('file-name');
-	savedIcon.classList.add('saved-icon');
+	modifiedIcon.classList.add('modified-icon');
 	closeButton.classList.add('close-button');
 	closeButtonIcon.classList.add('gg-close-r');
 
 	tab.setAttribute('data-for', filePath);
-	tab.setAttribute('saved', true);
+	tab.setAttribute('modified', false);
 
 	// TODO - Create a fancier CSS-based tooltip
 	tab.setAttribute('title', fileName);
@@ -38,13 +38,13 @@ async function createTab(filePath) {
 	closeButton.appendChild(closeButtonIcon);
 	name.appendChild(document.createTextNode(fileName));
 	tab.appendChild(name);
-	tab.appendChild(savedIcon);
+	tab.appendChild(modifiedIcon);
 	tab.appendChild(closeButton);
 
 	closeButton.addEventListener('click', event => {
 		event.stopPropagation();
 
-		if (tab.saved == false) {
+		if (tab.modified == true) {
 			const response = confirm('File has changes not yet saved. Changes will be lost. Continue?');
 
 			if (!response) {
