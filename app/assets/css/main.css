@@ -67,3 +67,31 @@ input[type="text"] {
 input[type="text"]:focus {
 	outline: none;
 }
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+    background: var(--color-scroll-dark);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-scroll-dark);
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-scroll-medium); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scroll-light);
+}
+
+/* Fix white corner*/
+::-webkit-scrollbar-corner { 
+  background: var(--color-scroll-dark);
+}
