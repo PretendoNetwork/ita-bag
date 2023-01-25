@@ -5,7 +5,21 @@
 	--grid-gap-corrected: calc(var(--grid-gap) * 2);
 	--true-file-system-width: calc(var(--file-system-width) - var(--grid-gap-corrected));
 	--true-app-width: calc(var(--app-width) - var(--grid-gap-corrected));
-	--main-height: calc(100vh - var(--grid-gap-corrected))
+	--main-height: calc(100vh - var(--grid-gap-corrected));
+
+	/* Colors */
+	--color-bg-dark: #131733;
+	--color-bg-dark-medium: #171B37;
+	--color-bg-medium: #1B1F3B;
+	--color-bg-light: #23274A;
+
+	--color-scroll-dark: #212859;
+	--color-scroll-medium: #33386c;
+	--color-scroll-light: #3c4267;
+
+	--color-highlight-dark: #673DB6;
+	--color-highlight-medium: #9D6FF3;
+	--color-highlight-light: #A185D6;
 }
 
 body {
@@ -52,4 +66,32 @@ input[type="text"] {
 }
 input[type="text"]:focus {
 	outline: none;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+    background: var(--color-scroll-dark);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-scroll-dark);
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-scroll-medium); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scroll-light);
+}
+
+/* Fix white corner*/
+::-webkit-scrollbar-corner { 
+  background: var(--color-scroll-dark);
 }

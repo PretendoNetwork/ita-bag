@@ -2,7 +2,7 @@
 
 .file-system {
   user-select: none;
-  background-color: #1B1F3B;
+  background-color: var(--color-bg-dark);
 }
 
 .file-system span,
@@ -18,12 +18,20 @@
 .file-system span {
   text-decoration: none;
   color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  font-size: 14px;
 }
 
 .file-system summary {
   list-style-type: none;
-  background-color: #eee;
+  background-color: var(--color-scroll-medium);
+  border-radius: 5px;
   outline: none;
+  color: white;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 300;
+  font-size: 14px;
 }
 
 .file-system details > :not(details),
@@ -49,7 +57,11 @@
 
 .file-system details::before,
 .file-system details > :not(details)::before {
-  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 2 2" xmlns="http://www.w3.org/2000/svg"><g><rect x="0" y="0" width="1" height="1"/></g></svg>') left top / 2px 2px;
+  background: url('../image/icons/file.svg') center center / 12px 12px no-repeat;
+  left: -14px;
+  top: 0.1px;
+  width: 16px;
+  height: 16px;
 }
 
 .file-system details::before {
@@ -59,26 +71,20 @@
   left: 5px;
   z-index: -1;
 }
-.file-system details > :not(details)::before {
-  top: 8px;
-  height: calc(100% - 8px);
-  background-repeat: repeat-x;
-  left: -15px;
-}
+
 .file-system details > summary::before {
-  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><g><rect x="0" y="0" width="12" height="12" fill="white" stroke="gray" stroke-width="1"/><line x1="3" y1="6" x2="9" y2="6" stroke="black" stroke-width="2"/><line x1="6" y1="3" x2="6" y2="9" stroke="black" stroke-width="2"/></g></svg>') center center / 12px 12px no-repeat;
-  left: -22px;
-  top: 2px;
+  background: url('../image/icons/add-r.svg') center center / 12px 12px no-repeat;
+  left: -18px;
+  top: 0px;
   width: 16px;
   height: 16px;
 }
 
 .file-system details[open] > summary::before {
-  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><title/><g><rect x="0" y="0" width="12" height="12" fill="white" stroke="gray" stroke-width="1"/><line x1="3" y1="6" x2="9" y2="6" stroke="black" stroke-width="2"/></g></svg>');
+  background-image: url('../image/icons/remove-r.svg');
 }
 
 .file-system summary.selected {
-  background-color: #beebff;
-  border-color: #99defd;
+  border-color: var(--color-highlight-light);
   z-index: 1;
 }

@@ -18,30 +18,33 @@ async function createTab(filePath) {
 
 	const tab = document.createElement('div');
 	const name = document.createElement('span');
+	const modifiedIcon = document.createElement('i');
 	const closeButton = document.createElement('span');
 	const closeButtonIcon = document.createElement('i');
 
 	tab.classList.add('tab');
 	name.classList.add('file-name');
+	modifiedIcon.classList.add('modified-icon');
 	closeButton.classList.add('close-button');
 	closeButtonIcon.classList.add('gg-close-r');
 
 	tab.setAttribute('data-for', filePath);
+	tab.setAttribute('modified', false);
 
 	// TODO - Create a fancier CSS-based tooltip
 	tab.setAttribute('title', fileName);
 	closeButton.setAttribute('title', 'Close editor');
-
+	
 	closeButton.appendChild(closeButtonIcon);
 	name.appendChild(document.createTextNode(fileName));
 	tab.appendChild(name);
+	tab.appendChild(modifiedIcon);
 	tab.appendChild(closeButton);
 
 	closeButton.addEventListener('click', event => {
 		event.stopPropagation();
 
-		// TODO - Set an "edited" property on the tab, don't check a class for this
-		if (closeButton.querySelector('i').classList.contains('gg-asterisk')) {
+		if (tab.modified == true) {
 			const response = confirm('File has changes not yet saved. Changes will be lost. Continue?');
 
 			if (!response) {

@@ -1,0 +1,97 @@
+:root {
+
+	/* Tab options */
+	--tab-min-size: 125px;
+	--tab-max-size: 250px;
+
+	--ggs: 0.6; /* Used by the https://css.gg/ icons to resize */
+}
+
+.app {
+	display: grid;
+	grid-template-rows: 0.07fr 0.93fr;
+	background-color: var(--color-bg-medium);
+	font-family: 'Poppins', sans-serif;
+}
+
+.app .editors .editor:not(.selected) {
+	display: none;
+}
+
+.app .tabs {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(var(--tab-min-size), var(--tab-max-size)));
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(var(--tab-min-size), var(--tab-max-size));
+	overflow-x: auto;
+	background-color: var(--color-bg-dark-medium);
+	height: 35px;
+}
+
+.app .tabs .tab {
+	min-width: var(--tab-min-size);
+	max-width: var(--tab-max-size);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background-color: var(--color-bg-dark);
+	color: white;
+	cursor: pointer;
+}
+
+.app .tabs .tab.selected {
+	background-color: var(--color-bg-medium);
+}
+
+.app .tabs .tab:not(.selected):hover {
+	background-color: var(--color-bg-light);
+}
+
+.app .tabs .tab .file-name {
+	display: inline-block;
+	max-width: var(--tab-max-size) - 15px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	margin-left: 5px;
+}
+
+.app .tabs .tab .modified-icon {
+	margin-right: 2px;
+}
+
+.app .tabs .tab .close-button {
+	margin-right: 5px;
+}
+
+.app .tabs .tab .close-button i:hover {
+	cursor: pointer;
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+    background: var(--color-scroll-dark);
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-scroll-dark);
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-scroll-medium); 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scroll-light);
+}
+
+/* Fix white corner*/
+::-webkit-scrollbar-corner { 
+  background: var(--color-scroll-dark);
+}

@@ -43,8 +43,8 @@ async function populatePRBSTab(editor) {
 
 	for (const input of inputs) {
 		input.addEventListener('input', () => {
-			document.querySelector('.tab.selected .close-button i').classList.remove('gg-close-r');
-			document.querySelector('.tab.selected .close-button i').classList.add('gg-asterisk');
+			document.querySelector('.tab.selected .modified-icon').classList.add('gg-asterisk');
+			document.querySelector('.tab.selected').modified = true;
 		});
 	}
 }
