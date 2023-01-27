@@ -29,6 +29,26 @@ class ETC1 {
 		return n;
 	}
 
+	average(array) {
+		const sum = array.reduce((prev, current) => prev + current, 0);
+		const average = sum / array.length;
+		return Math.round(average);
+	}
+
+	closestIndex(num, array) {
+		let previous = array[0];
+		let result = 0;
+
+		for (let i = 1; i < array.length; i++) {
+			if (Math.abs(num - previous) > Math.abs(num - array[i])) {
+				previous = array[i]
+				result = i;
+			}
+		}
+
+		return result;
+	}
+
 	decode(data, width, height, alpha) {
 		const output = Buffer.alloc(width * height * 4);
 
@@ -54,6 +74,33 @@ class ETC1 {
 				i += 1;
 			}
 		}
+
+		return output;
+	}
+
+	encode(data, width, height, alpha) {
+		const etc1Scramble = Buffer.alloc(width * height * 4);
+		const etc1Order = this.etc1Scramble(width, height);
+
+		let i = 0;
+		for (let tY = 0; tY < Math.floor(height / 4); tY++) {
+			for (let tX = 0; tX < Math.floor(height / 4); tX++) {
+				const TX = etc1Order[i] % Math.floor(width / 4);
+				const TY = Math.floor((etc1Order[i] - TX) / Math.floor(width / 4));
+
+				for (let y = 0; y < 4; y++) {
+					for (let x = 0; x < 4; x++) {
+						const scrambleOffset   = ((TX * 4) + x + ((TY * 4 + y) * width)) * 4;
+						const dataOffset = ((tX * 4) + x + ((tY * 4 + y) * width)) * 4;
+
+						etc1Scramble.fill(data.subarray(dataOffset, dataOffset + 4), scrambleOffset, scrambleOffset+4);
+					}
+				}
+				i += 1;
+			}
+		}
+
+		const output = this.etc1Encode(etc1Scramble, width, height, alpha);
 
 		return output;
 	}
@@ -106,6 +153,72 @@ class ETC1 {
 						toggle = !toggle;
 					}
 				}
+			}
+		}
+
+		return output;
+	}
+
+	etc1Encode(input, width, height, alpha) {
+		let output;
+		if (alpha) {
+			output = Buffer.alloc(width * height);
+		} else {
+			output = Buffer.alloc((width * height) / 2);
+		}
+
+		const r = Buffer.alloc(width * height);
+		const g = Buffer.alloc(width * height);
+		const b = Buffer.alloc(width * height);
+		const a = Buffer.alloc(width * height);
+		let offset = 0;
+		for (let tileWalkerY = 0; tileWalkerY < (height / 4); tileWalkerY++) {
+			for (let tileWalkerX = 0; tileWalkerX < (width / 4); tileWalkerX++) {
+				for (let tileY = 0; tileY < 4; tileY++) {
+					for (let tileX = 0; tileX < 4; tileX++) {
+						// (x * 4 + tX + ((y * 4 + tY) * width)) * 4;
+						const i = (tileWalkerY * 4 + tileY) * width + (tileWalkerX * 4 + tileX);
+						r[offset / 4] = input[i * 4]
+						g[offset / 4] = input[i * 4 + 1]
+						b[offset / 4] = input[i * 4 + 2]
+						a[offset / 4] = input[i * 4 + 3]
+						offset += 4;
+					}
+				}
+			}
+		}
+
+		for (let blockOffset = 0; blockOffset < Math.floor((width * height) / 16); blockOffset++) {
+			let blockIndex = blockOffset * 8;
+			if (alpha) {
+				blockIndex *= 2;
+			}
+
+			const rBlock = r.subarray(blockOffset * 16, blockOffset * 16 + 16);
+			const gBlock = g.subarray(blockOffset * 16, blockOffset * 16 + 16);
+			const bBlock = b.subarray(blockOffset * 16, blockOffset * 16 + 16);
+			const aBlock = a.subarray(blockOffset * 16, blockOffset * 16 + 16);
+
+			const colorBlock = this.etc1EncodeBlock(rBlock, gBlock, bBlock);
+
+			if (alpha) {
+				let toggle = false;
+				let a = 0;
+				for (let alphaOffset = 0; alphaOffset < 16; alphaOffset++) {
+					if (toggle) {
+						a |= aBlock[alphaOffset] & 0xf0;
+						output.fill(a, blockIndex + Math.floor(alphaOffset / 2), blockIndex + Math.floor(alphaOffset / 2) + 1);
+						a = 0;
+					} else {
+						a |= aBlock[alphaOffset] >> 4;
+					}
+
+					toggle = !toggle;
+				}
+
+				output.fill(colorBlock, blockIndex + 8, blockIndex + 16);
+			} else {
+				output.fill(colorBlock, blockIndex, blockIndex + 8);
 			}
 		}
 
@@ -199,6 +312,75 @@ class ETC1 {
 		return output;
 	}
 
+	etc1EncodeBlock(r, g, b) {
+		// TODO - Use flip and difference to improve image quality
+		const flip = 0;
+		const difference = 0;
+
+		const block = Buffer.alloc(8);
+		let blockTop = 0;
+		let blockBottom = 0;
+
+		let r1 = this.average(r.subarray(0, (r.length / 2) - 1));
+		let g1 = this.average(g.subarray(0, (g.length / 2) - 1));
+		let b1 = this.average(b.subarray(0, (b.length / 2) - 1));
+
+		let r2 = this.average(r.subarray(r.length / 2, r.length));
+		let g2 = this.average(g.subarray(g.length / 2, g.length));
+		let b2 = this.average(b.subarray(b.length / 2, b.length));
+
+		r1 = r1 & 0xf0 | r1 >> 4;
+		g1 = g1 & 0xf0 | g1 >> 4;
+		b1 = b1 & 0xf0 | b1 >> 4;
+
+		r2 = r2 & 0xf0 | r2 >> 4;
+		g2 = g2 & 0xf0 | g2 >> 4;
+		b2 = b2 & 0xf0 | b2 >> 4;
+
+		// TODO - Use other tables to improve image quality
+		const table1 = 0;
+		const table2 = 0;
+		for (let y = 0; y < 4; y++) {
+			for (let x = 0; x < 2; x++) {
+				const i = y * 4 + x;
+				const i2 = y * 4 + x + 2;
+
+				const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
+				const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
+
+				let MSB = index1 >> 1;
+				let LSB = index1 & 1;
+				let offset = x * 4 + y;
+
+				blockBottom |= MSB << (offset + 16) | LSB << offset;
+
+				MSB = index2 >> 1;
+				LSB = index2 & 1;
+				offset = (x + 2) * 4 + y;
+
+				blockBottom |= MSB << (offset + 16) | LSB << offset;
+			}
+		}
+
+		r1 = r1 >> 4;
+		g1 = g1 >> 4;
+		b1 = b1 >> 4;
+
+		r2 = r2 >> 4;
+		g2 = g2 >> 4;
+		b2 = b2 >> 4;
+
+		blockTop |= (flip << 31) | (difference << 30) | (table2 << 27) | (table1 << 24);
+		blockTop |= (b2 << 20) | (b1 << 16);
+		blockTop |= (g2 << 12) | (g1 << 8);
+		blockTop |= (r2 << 4) | r1;
+
+		block.writeInt32BE(blockBottom);
+		block.writeUint32BE(blockTop, 4);
+
+		return block;
+	}
+
 	etc1Pixel(r, g, b, x, y, block, table) {
 		const index = x * 4 + y;
 		const MSB = block << 1;
@@ -215,6 +397,15 @@ class ETC1 {
 		b = this.saturate(b + pixel);
 
 		return [r, g, b];
+	}
+
+	etc1PixelIndex(baseR, baseG, baseB, r, g, b, table) {
+		const differenceR = baseR - r;
+		const differenceG = baseG - g;
+		const differenceB = baseB - b;
+		const avgDifference = this.average([differenceR, differenceG, differenceB]);
+
+		return this.closestIndex(avgDifference, ETC1_LOOK_UP_TABLE[table]);
 	}
 
 	saturate(value) {
