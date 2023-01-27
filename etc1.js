@@ -41,7 +41,7 @@ class ETC1 {
 
 		for (let i = 1; i < array.length; i++) {
 			if (Math.abs(num - previous) > Math.abs(num - array[i])) {
-				previous = array[i]
+				previous = array[i];
 				result = i;
 			}
 		}
@@ -178,10 +178,10 @@ class ETC1 {
 					for (let tileX = 0; tileX < 4; tileX++) {
 						// (x * 4 + tX + ((y * 4 + tY) * width)) * 4;
 						const i = (tileWalkerY * 4 + tileY) * width + (tileWalkerX * 4 + tileX);
-						r[offset / 4] = input[i * 4]
-						g[offset / 4] = input[i * 4 + 1]
-						b[offset / 4] = input[i * 4 + 2]
-						a[offset / 4] = input[i * 4 + 3]
+						r[offset / 4] = input[i * 4];
+						g[offset / 4] = input[i * 4 + 1];
+						b[offset / 4] = input[i * 4 + 2];
+						a[offset / 4] = input[i * 4 + 3];
 						offset += 4;
 					}
 				}
