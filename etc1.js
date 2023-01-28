@@ -35,6 +35,35 @@ class ETC1 {
 		return Math.round(average);
 	}
 
+	getBlockTable(r, g, b) {
+		const rMax = Math.max(...r);
+		const rMin = Math.min(...r);
+
+		const gMax = Math.max(...g);
+		const gMin = Math.min(...g);
+
+		const bMax = Math.max(...b);
+		const bMin = Math.min(...b);
+
+		const differenceR = rMax - rMin;
+		const differenceG = gMax - gMin;
+		const differenceB = bMax - bMin;
+
+		const difference = Math.max(differenceR, differenceG, differenceB);
+
+		let previous = ETC1_LOOK_UP_TABLE[0][1];
+		let result = 0;
+
+		for (let i = 1; i < ETC1_LOOK_UP_TABLE.length; i++) {
+			if (Math.abs(difference - previous) > Math.abs(difference - ETC1_LOOK_UP_TABLE[i][1])) {
+				previous = ETC1_LOOK_UP_TABLE[i];
+				result = i;
+			}
+		}
+
+		return result;
+	}
+
 	closestIndex(num, array) {
 		let previous = array[0];
 		let result = 0;
@@ -174,8 +203,8 @@ class ETC1 {
 		let offset = 0;
 		for (let tileWalkerY = 0; tileWalkerY < (height / 4); tileWalkerY++) {
 			for (let tileWalkerX = 0; tileWalkerX < (width / 4); tileWalkerX++) {
-				for (let tileY = 0; tileY < 4; tileY++) {
-					for (let tileX = 0; tileX < 4; tileX++) {
+				for (let tileX = 0; tileX < 4; tileX++) {
+					for (let tileY = 0; tileY < 4; tileY++) {
 						// (x * 4 + tX + ((y * 4 + tY) * width)) * 4;
 						const i = (tileWalkerY * 4 + tileY) * width + (tileWalkerX * 4 + tileX);
 						r[offset / 4] = input[i * 4];
@@ -321,13 +350,21 @@ class ETC1 {
 		let blockTop = 0;
 		let blockBottom = 0;
 
-		let r1 = this.average(r.subarray(0, (r.length / 2) - 1));
-		let g1 = this.average(g.subarray(0, (g.length / 2) - 1));
-		let b1 = this.average(b.subarray(0, (b.length / 2) - 1));
+		const arrayR1 = r.subarray(0, (r.length / 2) - 1);
+		const arrayG1 = g.subarray(0, (g.length / 2) - 1);
+		const arrayB1 = b.subarray(0, (b.length / 2) - 1);
 
-		let r2 = this.average(r.subarray(r.length / 2, r.length));
-		let g2 = this.average(g.subarray(g.length / 2, g.length));
-		let b2 = this.average(b.subarray(b.length / 2, b.length));
+		const arrayR2 = r.subarray(r.length / 2, r.length);
+		const arrayG2 = g.subarray(g.length / 2, g.length);
+		const arrayB2 = b.subarray(b.length / 2, b.length);
+
+		let r1 = this.average(arrayR1);
+		let g1 = this.average(arrayG1);
+		let b1 = this.average(arrayB1);
+
+		let r2 = this.average(arrayR2);
+		let g2 = this.average(arrayG2);
+		let b2 = this.average(arrayB2);
 
 		r1 = r1 & 0xf0 | r1 >> 4;
 		g1 = g1 & 0xf0 | g1 >> 4;
@@ -337,9 +374,8 @@ class ETC1 {
 		g2 = g2 & 0xf0 | g2 >> 4;
 		b2 = b2 & 0xf0 | b2 >> 4;
 
-		// TODO - Use other tables to improve image quality
-		const table1 = 0;
-		const table2 = 0;
+		const table1 = this.getBlockTable(arrayR1, arrayG1, arrayB1);
+		const table2 = this.getBlockTable(arrayR2, arrayG2, arrayB2);
 		for (let y = 0; y < 4; y++) {
 			for (let x = 0; x < 2; x++) {
 				const i = y * 4 + x;
@@ -370,10 +406,10 @@ class ETC1 {
 		g2 = g2 >> 4;
 		b2 = b2 >> 4;
 
-		blockTop |= (flip << 31) | (difference << 30) | (table2 << 27) | (table1 << 24);
-		blockTop |= (b2 << 20) | (b1 << 16);
-		blockTop |= (g2 << 12) | (g1 << 8);
-		blockTop |= (r2 << 4) | r1;
+		blockTop |= (table1 << 29) | (table2 << 26) | (difference << 25) | (flip << 24);
+		blockTop |= (b1 << 20) | (b2 << 16);
+		blockTop |= (g1 << 12) | (g2 << 8);
+		blockTop |= (r1 << 4) | r2;
 
 		block.writeInt32BE(blockBottom);
 		block.writeUint32BE(blockTop, 4);
