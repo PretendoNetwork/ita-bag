@@ -35,7 +35,7 @@ class ETC1 {
 		return Math.round(average);
 	}
 
-	getBlockTable(r, g, b) {
+	getColorDifference(r, g, b) {
 		const rMax = Math.max(...r);
 		const rMin = Math.min(...r);
 
@@ -49,19 +49,20 @@ class ETC1 {
 		const differenceG = gMax - gMin;
 		const differenceB = bMax - bMin;
 
-		const difference = Math.max(differenceR, differenceG, differenceB);
+		return Math.max(differenceR, differenceG, differenceB);
+	}
 
+	getBlockTable(difference) {
 		let previous = ETC1_LOOK_UP_TABLE[0][1];
-		let result = 0;
 
 		for (let i = 1; i < ETC1_LOOK_UP_TABLE.length; i++) {
 			if (Math.abs(difference - previous) > Math.abs(difference - ETC1_LOOK_UP_TABLE[i][1])) {
-				previous = ETC1_LOOK_UP_TABLE[i];
-				result = i;
+				return i - 1;
 			}
+			previous = ETC1_LOOK_UP_TABLE[i][1];
 		}
 
-		return result;
+		return 0;
 	}
 
 	closestIndex(num, array) {
@@ -205,7 +206,6 @@ class ETC1 {
 			for (let tileWalkerX = 0; tileWalkerX < (width / 4); tileWalkerX++) {
 				for (let tileX = 0; tileX < 4; tileX++) {
 					for (let tileY = 0; tileY < 4; tileY++) {
-						// (x * 4 + tX + ((y * 4 + tY) * width)) * 4;
 						const i = (tileWalkerY * 4 + tileY) * width + (tileWalkerX * 4 + tileX);
 						r[offset / 4] = input[i * 4];
 						g[offset / 4] = input[i * 4 + 1];
@@ -342,21 +342,67 @@ class ETC1 {
 	}
 
 	etc1EncodeBlock(r, g, b) {
-		// TODO - Use flip and difference to improve image quality
-		const flip = 0;
+		// TODO - Use difference to improve image quality
+		let flip = 0;
 		const difference = 0;
 
 		const block = Buffer.alloc(8);
 		let blockTop = 0;
 		let blockBottom = 0;
 
-		const arrayR1 = r.subarray(0, (r.length / 2) - 1);
-		const arrayG1 = g.subarray(0, (g.length / 2) - 1);
-		const arrayB1 = b.subarray(0, (b.length / 2) - 1);
+		let arrayR1 = [];
+		let arrayG1 = [];
+		let arrayB1 = [];
 
-		const arrayR2 = r.subarray(r.length / 2, r.length);
-		const arrayG2 = g.subarray(g.length / 2, g.length);
-		const arrayB2 = b.subarray(b.length / 2, b.length);
+		let arrayR2 = [];
+		let arrayG2 = [];
+		let arrayB2 = [];
+
+		for (let tileX = 0; tileX < 2; tileX++) {
+			for (let tileY = 0; tileY < 4; tileY++) {
+				const i = tileX * 4 + tileY;
+				const i2 = (tileX + 2) * 4 + tileY;
+
+				arrayR1.push(r[i]);
+				arrayG1.push(g[i]);
+				arrayB1.push(b[i]);
+
+				arrayR2.push(r[i2]);
+				arrayG2.push(g[i2]);
+				arrayB2.push(b[i2]);
+			}
+		}
+
+		let difference1 = this.getColorDifference(arrayR1, arrayG1, arrayB1);
+		let difference2 = this.getColorDifference(arrayR2, arrayG2, arrayB2);
+
+		if (difference1 > 120 && difference2 > 120) {
+			flip = 1;
+			for (let tileX = 0; tileX < 2; tileX++) {
+				for (let tileY = 0; tileY < 4; tileY++) {
+					const i = tileX * 4 + tileY;
+					const i2 = (tileX + 2) * 4 + tileY;
+
+					arrayR1 = [];
+					arrayG1 = [];
+					arrayB1 = [];
+
+					arrayR2 = [];
+					arrayG2 = [];
+					arrayB2 = [];
+
+					arrayR1.push(r[i]);
+					arrayG1.push(g[i]);
+					arrayB1.push(b[i]);
+
+					arrayR2.push(r[i2]);
+					arrayG2.push(g[i2]);
+					arrayB2.push(b[i2]);
+				}
+			}
+			difference1 = this.getColorDifference(arrayR1, arrayG1, arrayB1);
+			difference2 = this.getColorDifference(arrayR2, arrayG2, arrayB2);
+		}
 
 		let r1 = this.average(arrayR1);
 		let g1 = this.average(arrayG1);
@@ -374,27 +420,47 @@ class ETC1 {
 		g2 = g2 & 0xf0 | g2 >> 4;
 		b2 = b2 & 0xf0 | b2 >> 4;
 
-		const table1 = this.getBlockTable(arrayR1, arrayG1, arrayB1);
-		const table2 = this.getBlockTable(arrayR2, arrayG2, arrayB2);
-		for (let y = 0; y < 4; y++) {
-			for (let x = 0; x < 2; x++) {
-				const i = y * 4 + x;
-				const i2 = y * 4 + x + 2;
+		const table1 = this.getBlockTable(difference1);
+		const table2 = this.getBlockTable(difference2);
+		if (!flip) {
+			for (let y = 0; y < 4; y++) {
+				for (let x = 0; x < 2; x++) {
+					const i = y * 4 + x;
+					const i2 = y * 4 + x + 2;
 
-				const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
-				const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
+					const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
+					const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
 
-				let MSB = index1 >> 1;
-				let LSB = index1 & 1;
-				let offset = x * 4 + y;
+					let MSB = index1 >> 1;
+					let LSB = index1 & 1;
 
-				blockBottom |= MSB << (offset + 16) | LSB << offset;
+					blockBottom |= MSB << (i + 16) | LSB << i;
 
-				MSB = index2 >> 1;
-				LSB = index2 & 1;
-				offset = (x + 2) * 4 + y;
+					MSB = index2 >> 1;
+					LSB = index2 & 1;
 
-				blockBottom |= MSB << (offset + 16) | LSB << offset;
+					blockBottom |= MSB << (i2 + 16) | LSB << i2;
+				}
+			}
+		} else {
+			for (let y = 0; y < 2; y++) {
+				for (let x = 0; x < 4; x++) {
+					const i = y * 4 + x;
+					const i2 = (y + 2) * 4 + x;
+
+					const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
+					const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
+
+					let MSB = index1 >> 1;
+					let LSB = index1 & 1;
+
+					blockBottom |= MSB << (i + 16) | LSB << i;
+
+					MSB = index2 >> 1;
+					LSB = index2 & 1;
+
+					blockBottom |= MSB << (i2 + 16) | LSB << i2;
+				}
 			}
 		}
 
@@ -412,7 +478,7 @@ class ETC1 {
 		blockTop |= (r1 << 4) | r2;
 
 		block.writeInt32BE(blockBottom);
-		block.writeUint32BE(blockTop, 4);
+		block.writeInt32BE(blockTop, 4);
 
 		return block;
 	}
