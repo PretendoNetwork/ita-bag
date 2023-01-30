@@ -16,5 +16,7 @@ ipcRenderer.on('import-archive', (_event, path) => {
 
 // File > Export Archive
 ipcRenderer.on('export-archive', async (_event, path) => {
+    ipcRenderer.send('set-menu-item-available', 'export-archive', false);
     await exportSARC(path);
+    ipcRenderer.send('set-menu-item-available', 'export-archive', true);
 })

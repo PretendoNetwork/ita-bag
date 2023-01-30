@@ -52,11 +52,13 @@ function createAppMenu(window) {
 	label: 'File',
 	submenu: 
 	[{
+		id: 'save-tab',
 		label: 'Save Tab',
 		accelerator: 'CmdOrCtrl+S',
 		click: () => { window.webContents.send('save') }
 	},
 	{
+		id: 'save-all-tabs',
 		label: 'Save All Tabs',
 		accelerator: 'CmdOrCtrl+Shift+S',
 		click: () => { window.webContents.send('save-all') }
@@ -65,11 +67,13 @@ function createAppMenu(window) {
 		type: 'separator'
 	},
 	{
+		id: 'import-archive',
 		label: 'Import Archive',
 		accelerator: 'CmdOrCtrl+I',
 		click: () => { handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc', 'szs']}]}) }
 	},
 	{
+		id: 'export-archive',
 		label: 'Export Archive',
 		accelerator: 'CmdOrCtrl+E',
 		click: () => { handleFileSave(window, 'export-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc', 'szs']}]}) }
@@ -95,6 +99,10 @@ function createAppMenu(window) {
 			role: 'toggleDevTools'
 		}
 	]}))
+
+	ipcMain.on('set-menu-item-available', (event, item, available) => {
+		Menu.getApplicationMenu().getMenuItemById(item).enabled = available;
+	})
 
 	Menu.setApplicationMenu(menu)
 }

@@ -1,7 +1,6 @@
 import { createTab, openTab } from './tabs.js';
 import { VIRTUAL_ARCHIVE, sarcToObject, objectToSarc } from './archive.js';
 
-const { ipcRenderer } = require('electron');
 const { SarcFile } = require('@themezernx/sarclib/dist');
 
 
@@ -123,6 +122,7 @@ export async function exportSARC(path) {
 
 	document.getElementById('export-modal').classList.add('hidden');
 	sarc.saveTo(path, 0);
+	Menu.getApplicationMenu().getMenuItemById('export-archive').enabled = true;
 }
 
 function countKeys(t) {
