@@ -113,7 +113,28 @@ export function importSARC(path) {
  *
  * @param {String} path Path to save to
  */
-export function exportSARC(path) {
-	const sarc = objectToSarc(VIRTUAL_ARCHIVE);
+export async function exportSARC(path) {
+	document.getElementById("export-progress").value = 0;
+	document.getElementById("export-progress").max = countKeys(VIRTUAL_ARCHIVE);
+
+	document.getElementById('export-modal').classList.remove('hidden');
+
+	const sarc = await objectToSarc(VIRTUAL_ARCHIVE);
+
+	document.getElementById('export-modal').classList.add('hidden');
 	sarc.saveTo(path, 0);
+}
+
+function countKeys(t) {
+	switch (t?.constructor) {
+	  case Object:
+		return Object
+		  .values(t)
+		  .reduce((r, v) => r + 1 + countKeys(v), 0)
+	  case Array:
+		return t
+		  .reduce((r, v) => r + countKeys(v), 0)
+	  default:
+		return 0
+	}
 }

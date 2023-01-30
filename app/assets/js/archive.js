@@ -42,7 +42,6 @@ export function sarcToObject(sarc, root) {
 
 		if (extension === 'szs' && data.subarray(0, 4).toString() === 'Yaz0') {
 			fileName = fileNameParts.join('.');
-			console.log(`Decompressing ${fileName}`)
 			data = decompressYaz0(data);
 		}
 
@@ -63,8 +62,7 @@ export function sarcToObject(sarc, root) {
  * @param {SarcFile} sarc SARC destination
  * @param {String} currentPath Path of current object to save
  */
-export function objectToSarc(object, sarc=new SarcFile, path='') {
-	let childElement;
+export async function objectToSarc(object, sarc=new SarcFile, path='') {
 
 	for (const key in object) {
 		const value = object[key];
@@ -75,12 +73,19 @@ export function objectToSarc(object, sarc=new SarcFile, path='') {
 
 		if (value.constructor === Object) {
 			// * Value is a folder, keep iterating
-			childElement = objectToSarc(value, sarc, newPath);
+			childElement = await objectToSarc(value, sarc, newPath);
 		} else {
 			// * Value is a file, add it to the sarc
-			console.log(`Compressing ${newPath}.szs`)
-			sarc.addRawFile(compressYaz0(value, 0, 1), `${newPath}.szs`);
+			document.getElementById("export-caption").innerHTML = newPath;
+            await new Promise(r => setImmediate(r)); // Wait for the UI to catch up
+
+			newPath = newPath.concat(newPath.endsWith('.xml') ? '' : '.szs');
+			sarc.addRawFile(newPath.endsWith('.xml') ? value : compressYaz0(value, 0, 1), newPath);
+			
+			document.getElementById("export-progress").value += 1;
 		}
 	}
+
+	sarc.setLittleEndian(true);
 	return sarc;
 }

@@ -15,6 +15,6 @@ ipcRenderer.on('import-archive', (_event, path) => {
 })
 
 // File > Export Archive
-ipcRenderer.on('export-archive', (_event, path) => {
-    exportSARC(path);
+ipcRenderer.on('export-archive', async (_event, path) => {
+    await exportSARC(path);
 })

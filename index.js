@@ -11,7 +11,8 @@ function createWindow() {
 		height: 600,
 		webPreferences: { // TODO - Use Electron's contextBridge instead
 			nodeIntegration: true,
-			contextIsolation: false
+			contextIsolation: false,
+			backgroundThrottling: false
 		}
 	});
 

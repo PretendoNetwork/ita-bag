@@ -161,6 +161,14 @@
 			</div>
 		</template>
 
+		<div class="modal-wrapper hidden" id="export-modal">
+			<div class="modal">
+				<h1 class="modal-title">Exporting...</h1>
+				<progress id="export-progress" value="0" max="10000"></progress>
+				<p class="modal-caption" id= "export-caption">...</p>
+			</div>
+		</div>
+
 		<script type="module" src="assets/js/util.js"></script>
 		<script src="assets/js/contour.js"></script> <!-- TODO - Update to use https://github.com/d3/d3-contour maybe? -->
 		<script src="assets/js/index.js"></script>
