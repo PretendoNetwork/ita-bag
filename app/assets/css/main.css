@@ -25,6 +25,7 @@
 body {
 	margin: 0;
 	background-color: ivory;
+	font-family: 'Poppins', sans-serif;
 }
 
 .main {
@@ -91,7 +92,74 @@ input[type="text"]:focus {
   background: var(--color-scroll-light);
 }
 
-/* Fix white corner*/
+/* Fix white corner */
 ::-webkit-scrollbar-corner { 
   background: var(--color-scroll-dark);
+}
+
+/* Modal (Lifted from PretendoNetwork/website) */
+
+body.modal-open {
+	overflow: hidden;
+}
+
+div.modal-wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100vh;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.4);
+
+	z-index: 10;
+}
+div.modal-wrapper.hidden {
+	display: none;
+}
+div.modal {
+	background: var(--color-bg-dark);
+	padding: 48px;
+	border-radius: 8px;
+	text-align: left;
+	width: min(660px, 90%);
+	box-sizing: border-box;
+}
+
+div.modal h1 {
+	margin-top: 0;
+}
+p.modal-caption, h1.modal-title {
+	color: white;
+}
+
+
+.modal-button-wrapper {
+	margin-top: 24px;
+	display: flex;
+	justify-content: flex-end;
+}
+.modal-button-wrapper button {
+	margin-left: 12px;
+	width: fit-content;
+}
+.modal-button-wrapper button.cancel {
+	background: none;
+}
+.modal-button-wrapper button {
+	padding: 12px 24px;
+}
+
+@media screen and (max-width: 600px) {
+	div.modal {
+		padding: 24px;
+	}
+}
+
+progress {
+  width: 100%;
+  accent-color: var(--color-highlight-light);
 }
