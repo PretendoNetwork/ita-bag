@@ -22,7 +22,7 @@ function createWindow() {
 	window.maximize();
 	window.loadFile('app/index.html');
 
-	handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc', 'szs']}]})
+	handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]})
 }
 
 app.whenReady().then(() => {
@@ -70,13 +70,13 @@ function createAppMenu(window) {
 		id: 'import-archive',
 		label: 'Import Archive',
 		accelerator: 'CmdOrCtrl+I',
-		click: () => { handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc', 'szs']}]}) }
+		click: () => { handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}) }
 	},
 	{
 		id: 'export-archive',
 		label: 'Export Archive',
 		accelerator: 'CmdOrCtrl+E',
-		click: () => { handleFileSave(window, 'export-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc', 'szs']}]}) }
+		click: () => { handleFileSave(window, 'export-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}) }
 	}
 	]}))
 	
