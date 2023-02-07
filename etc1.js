@@ -1,4 +1,5 @@
 // * Based on https://github.com/infval/AMLUnpacker_TrueRemembrance/blob/master/AMLUnpacker_Python/etc1decoder.py
+// * ETC1 block encoding based on https://github.com/IcySon55/Kuriimu/blob/master/src/Kontract/Image/Support/ETC1.cs
 const Jimp = require('jimp');
 
 const ETC1_LOOK_UP_TABLE = [
@@ -11,6 +12,138 @@ const ETC1_LOOK_UP_TABLE = [
 	[33, 106, -33, -106],
 	[47, 183, -47, -183]
 ];
+
+class ETC1Solution {
+	constructor(error) {
+		this.error = error;
+	}
+}
+
+class ETC1SolutionSet {
+	constructor(flip = 0, difference = 0, soln0 = undefined, soln1 = undefined) {
+		this.flip = flip;
+		this.difference = difference;
+		// Both soln0 or soln1 have to be defined or undefined equally.
+		// We will use soln0 to determine this
+		if (soln0) {
+			this.soln0 = soln0;
+			this.soln1 = soln1;
+		} else {
+			this.soln1 = new ETC1Solution(Number.MAX_SAFE_INTEGER);
+			this.soln0 = new ETC1Solution(Number.MAX_SAFE_INTEGER);
+		}
+
+	}
+
+	totalError() {
+		return this.soln0.error + this.soln1.error;
+	}
+}
+
+class ETC1Optimizer {
+	constructor(r, g, b, limit, error) {
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.limit = limit;
+		this.baseR = this.average(r) * (limit / 256);
+		this.baseG = this.average(g) * (limit / 256);
+		this.baseB = this.average(b) * (limit / 256);
+		this.bestSoln = new ETC1Solution(error);
+	}
+
+	average(array) {
+		const sum = array.reduce((prev, current) => prev + current, 0);
+		const average = sum / array.length;
+		return Math.round(average);
+	}
+
+	limitValue(value) {
+		if (value > this.limit) {
+			return this.limit;
+		} if (value < 0) {
+			return 0;
+		}
+		return value;
+	}
+
+	scale(r, g, b, limit) {
+		if (limit == 16) {
+			return [r * 17, g * 17, b * 17];
+		}
+
+		return [(r << 3) | (r >> 2), (g << 3) | (g >> 2), (b << 3) | (b >> 2)];
+	}
+
+	computeDeltas(deltas) {
+		let x = [];
+		let y = [];
+		let z = [];
+
+		for (let i = 0; i < deltas.length; i++) {
+			x.push(this.limitValue(deltas[i] + this.baseR));
+			y.push(this.limitValue(deltas[i] + this.baseG));
+			z.push(this.limitValue(deltas[i] + this.baseB));
+		}
+
+		return this.testUnscaledColors(x, y, z);
+	}
+
+	testUnscaledColors(r, g, b) {
+		let success = false;
+
+		// All color arrays should have the same length, so we'll iterate using red
+		for (let i = 0; i < r.length; i++) {
+			for (let modifierIndex = 0; modifierIndex < ETC1_LOOK_UP_TABLE.length; modifierIndex++) {
+				if (this.evaluateSolution(r[i], g[i], b[i], modifierIndex)) {
+					success = true;
+					if (this.bestSoln.error == 0) return true;
+				}
+			}
+		}
+		return success;
+	}
+
+	evaluateSolution(r, g, b, intenTable) {
+		let soln = new ETC1Solution(0);
+
+		soln.blockR = r;
+		soln.blockG = g;
+		soln.blockB = b;
+		soln.intenTable = intenTable;
+
+		let newTableR = new Array(4);
+		let newTableG = new Array(4);
+		let newTableB = new Array(4);
+		const scaledColor = this.scale(r, g, b, this.limit);
+		for (let i = 0; i < 4; i++) {
+			newTableR[i] = scaledColor[0] + ETC1_LOOK_UP_TABLE[intenTable][i];
+			newTableG[i] = scaledColor[1] + ETC1_LOOK_UP_TABLE[intenTable][i];
+			newTableB[i] = scaledColor[2] + ETC1_LOOK_UP_TABLE[intenTable][i];
+		}
+
+		for (let i = 0; i < 8; i++) {
+			let bestJ = 0;
+			let bestError = Number.MAX_SAFE_INTEGER;
+			for (let j = 0; j < 3; j++) {
+				let error = this.r[i] - newTableR[j];
+				error += this.g[i] - newTableG[j];
+				error += this.b[i] - newTableB[j];
+				if (error < bestError)
+				{
+					bestError = error;
+					bestJ = j;
+				}
+			}
+			soln.error += bestError;
+			if (soln.error >= this.bestSoln.error) return false;
+			soln.selectorMSB |= (bestJ / 2 << i);
+			soln.selectorLSB |= (bestJ % 2 << i);
+		}
+		this.bestSoln = soln;
+		return true;
+	}
+}
 
 class ETC1 {
 	constructor(size, etc1, alpha) {
@@ -29,54 +162,12 @@ class ETC1 {
 		return n;
 	}
 
-	average(array) {
-		const sum = array.reduce((prev, current) => prev + current, 0);
-		const average = sum / array.length;
-		return Math.round(average);
+	allEqual(array) {
+		return array.every( v => v === array[0] );
 	}
 
-	getColorDifference(r, g, b) {
-		const rMax = Math.max(...r);
-		const rMin = Math.min(...r);
-
-		const gMax = Math.max(...g);
-		const gMin = Math.min(...g);
-
-		const bMax = Math.max(...b);
-		const bMin = Math.min(...b);
-
-		const differenceR = rMax - rMin;
-		const differenceG = gMax - gMin;
-		const differenceB = bMax - bMin;
-
-		return Math.max(differenceR, differenceG, differenceB);
-	}
-
-	getBlockTable(difference) {
-		let previous = ETC1_LOOK_UP_TABLE[0][1];
-
-		for (let i = 1; i < ETC1_LOOK_UP_TABLE.length; i++) {
-			if (Math.abs(difference - previous) > Math.abs(difference - ETC1_LOOK_UP_TABLE[i][1])) {
-				return i - 1;
-			}
-			previous = ETC1_LOOK_UP_TABLE[i][1];
-		}
-
-		return 0;
-	}
-
-	closestIndex(num, array) {
-		let previous = array[0];
-		let result = 0;
-
-		for (let i = 1; i < array.length; i++) {
-			if (Math.abs(num - previous) > Math.abs(num - array[i])) {
-				previous = array[i];
-				result = i;
-			}
-		}
-
-		return result;
+	errorRGB(r, g, b) {
+		return 2 * r * r + 4 * g * g + 3 * b * b; // human perception
 	}
 
 	decode(data, width, height, alpha) {
@@ -342,86 +433,181 @@ class ETC1 {
 	}
 
 	etc1EncodeBlock(r, g, b) {
-		// TODO - Use difference to improve image quality
-		let flip = 0;
-		const difference = 0;
-
 		const block = Buffer.alloc(8);
-		let blockTop = 0;
-		let blockBottom = 0;
 
-		let arrayR1 = [];
-		let arrayG1 = [];
-		let arrayB1 = [];
+		let bestsolns = new ETC1SolutionSet();
 
-		let arrayR2 = [];
-		let arrayG2 = [];
-		let arrayB2 = [];
-
-		for (let tileX = 0; tileX < 2; tileX++) {
-			for (let tileY = 0; tileY < 4; tileY++) {
-				const i = tileX * 4 + tileY;
-				const i2 = (tileX + 2) * 4 + tileY;
-
-				arrayR1.push(r[i]);
-				arrayG1.push(g[i]);
-				arrayB1.push(b[i]);
-
-				arrayR2.push(r[i2]);
-				arrayG2.push(g[i2]);
-				arrayB2.push(b[i2]);
-			}
-		}
-
-		let difference1 = this.getColorDifference(arrayR1, arrayG1, arrayB1);
-		let difference2 = this.getColorDifference(arrayR2, arrayG2, arrayB2);
-
-		if (difference1 > 120 && difference2 > 120) {
-			flip = 1;
-			for (let tileX = 0; tileX < 2; tileX++) {
-				for (let tileY = 0; tileY < 4; tileY++) {
-					const i = tileX * 4 + tileY;
-					const i2 = (tileX + 2) * 4 + tileY;
-
-					arrayR1 = [];
-					arrayG1 = [];
-					arrayB1 = [];
-
-					arrayR2 = [];
-					arrayG2 = [];
-					arrayB2 = [];
-
-					arrayR1.push(r[i]);
-					arrayG1.push(g[i]);
-					arrayB1.push(b[i]);
-
-					arrayR2.push(r[i2]);
-					arrayG2.push(g[i2]);
-					arrayB2.push(b[i2]);
+		// Special case: all colors of this block are the same
+		// TODO - Why this outputs black?
+		/*
+		if (this.allEqual(r) && this.allEqual(g) && this.allEqual(b)) {
+			// TODO - Precompute this array?
+			let solidColorLookup = [];
+			for (let limit = 16; limit <= 32; limit += 16) {
+				for (let modifierIndex = 0; modifierIndex < ETC1_LOOK_UP_TABLE.length; modifierIndex++) {
+					for (let selector = 0; selector < ETC1_LOOK_UP_TABLE[modifierIndex].length; selector++) {
+						for (let color = 0; color < 256; color++) {
+							let packedColors = [];
+							for (let packedColor = 0; packedColor < limit; packedColor++) {
+								let c = 0;
+								if (limit == 32) {
+									c = (packedColor << 3) | (packedColor >> 2);
+								} else {
+									c = packedColor * 17;
+								}
+								packedColors.push((Math.abs(this.saturate(c + ETC1_LOOK_UP_TABLE[modifierIndex][selector]) - color) << 8) | packedColor);
+							}
+							solidColorLookup.push(Math.min(packedColors));
+						}
+					}
 				}
 			}
-			difference1 = this.getColorDifference(arrayR1, arrayG1, arrayB1);
-			difference2 = this.getColorDifference(arrayR2, arrayG2, arrayB2);
+
+			let solutionsArray = [];
+			for (let i = 0; i < 64; i++) {
+				let red = solidColorLookup[i * 256 + r[0]];
+				let green = solidColorLookup[i * 256 + g[0]];
+				let blue = solidColorLookup[i * 256 + b[0]];
+
+				const error = this.errorRGB(red >> 8, green >> 8, blue >> 8);
+
+				let soln = new ETC1Solution(error);
+				soln.blockR = red;
+				soln.blockG = green;
+				soln.blockB = blue;
+				soln.intenTable = ETC1_LOOK_UP_TABLE[(i >> 2) & 7];
+
+				if ((i & 2) == 2) {
+					soln.selectorMSB = 0xFF;
+				} else {
+					soln.selectorMSB = 0;
+				}
+
+				if ((i & 1) == 1) {
+					soln.selectorLSB = 0xFF;
+				} else {
+					soln.selectorLSB = 0;
+				}
+
+				solutionsArray.push(new ETC1SolutionSet(0, (i & 32) == 32, soln, soln));
+			}
+
+			solutionsArray.sort((a, b) => {
+				return a.soln0.error - b.soln0.error;
+			});
+
+			bestsolns = solutionsArray[0];
+		} else {
+			*/
+		if (true) {
+			for (let flip = 0; flip < 2; flip++) {
+				let arrayR1 = [];
+				let arrayG1 = [];
+				let arrayB1 = [];
+
+				let arrayR2 = [];
+				let arrayG2 = [];
+				let arrayB2 = [];
+
+				if (!flip) {
+					for (let tileX = 0; tileX < 2; tileX++) {
+						for (let tileY = 0; tileY < 4; tileY++) {
+							const i = tileX * 4 + tileY;
+							const i2 = (tileX + 2) * 4 + tileY;
+
+							arrayR1.push(r[i]);
+							arrayG1.push(g[i]);
+							arrayB1.push(b[i]);
+
+							arrayR2.push(r[i2]);
+							arrayG2.push(g[i2]);
+							arrayB2.push(b[i2]);
+						}
+					}
+				} else {
+					for (let tileY = 0; tileY < 2; tileY++) {
+						for (let tileX = 0; tileX < 4; tileX++) {
+							const i = tileX * 4 + tileY;
+							const i2 = tileX * 4 + tileY + 2;
+
+							arrayR1.push(r[i]);
+							arrayG1.push(g[i]);
+							arrayB1.push(b[i]);
+
+							arrayR2.push(r[i2]);
+							arrayG2.push(g[i2]);
+							arrayB2.push(b[i2]);
+						}
+					}
+				}
+
+				for (let difference = 0; difference < 2; difference++) {
+					let solns = [new ETC1Solution(), new ETC1Solution()];
+					const limit = difference ? 32 : 16;
+					let i;
+					for (i = 0; i < 2; i++) {
+						let errorThreshold = bestsolns.totalError();
+						if (i == 1) errorThreshold -= solns[0].error;
+
+						let opt;
+						if (i == 1) {
+							opt = new ETC1Optimizer(arrayR1, arrayG1, arrayB1, limit, errorThreshold);
+						} else {
+							opt = new ETC1Optimizer(arrayR2, arrayG2, arrayB2, limit, errorThreshold);
+						}
+
+						if (i == 1 && difference) {
+							opt.baseR = solns[0].blockR;
+							opt.baseG = solns[0].blockG;
+							opt.baseB = solns[0].blockB;
+							if (!opt.computeDeltas([-4, -3, -2, -1, 0, 1, 2, 3])) break;
+						} else {
+							if (!opt.computeDeltas([-4, -3, -2, -1, 0, 1, 2, 3, 4])) break;
+							// TODO: Fix fairly arbitrary/unrefined thresholds that control how far away to scan for potentially better solutions.
+							if (opt.bestSoln.error > 9000) {
+								if (opt.bestSoln.error > 18000) {
+									opt.computeDeltas([-8, -7, -6, -5, 5, 6, 7, 8]);
+								} else {
+									opt.computeDeltas([-5, 5]);
+								}
+							}
+						}
+						if (opt.bestSoln.error >= errorThreshold) break;
+						solns[i] = opt.bestSoln;
+					}
+					if (i == 2) {
+						let solnset = new ETC1SolutionSet(flip, difference, solns[0], solns[1]);
+						if (solnset.totalError() < bestsolns.totalError()) {
+							bestsolns = solnset;
+						}
+					}
+				}
+			}
 		}
 
-		let r1 = this.average(arrayR1);
-		let g1 = this.average(arrayG1);
-		let b1 = this.average(arrayB1);
+		let MSB = bestsolns.soln0.selectorMSB << 8 | bestsolns.soln1.selectorMSB;
+		let LSB = bestsolns.soln0.selectorLSB << 8 | bestsolns.soln1.selectorLSB;
 
-		let r2 = this.average(arrayR2);
-		let g2 = this.average(arrayG2);
-		let b2 = this.average(arrayB2);
+		if (bestsolns.flip) {
+			let flipMSB = 0;
+			let flipLSB = 0;
+			for (let tileY = 0; tileY < 2; tileY++) {
+				for (let tileX = 0; tileX < 4; tileX++) {
+					const i = tileX * 4 + tileY;
+					const i2 = tileY * 4 + tileX;
 
-		r1 = r1 & 0xf0 | r1 >> 4;
-		g1 = g1 & 0xf0 | g1 >> 4;
-		b1 = b1 & 0xf0 | b1 >> 4;
+					flipMSB |= (MSB >> i) << i2;
+					flipLSB |= (LSB >> i) << i2;
+				}
+			}
 
-		r2 = r2 & 0xf0 | r2 >> 4;
-		g2 = g2 & 0xf0 | g2 >> 4;
-		b2 = b2 & 0xf0 | b2 >> 4;
+			MSB = flipMSB;
+			LSB = flipLSB;
+		}
 
-		const table1 = this.getBlockTable(difference1);
-		const table2 = this.getBlockTable(difference2);
+		let blockBottom = MSB | LSB << 16;
+
+		/*
 		if (!flip) {
 			for (let y = 0; y < 4; y++) {
 				for (let x = 0; x < 2; x++) {
@@ -471,11 +657,18 @@ class ETC1 {
 		r2 = r2 >> 4;
 		g2 = g2 >> 4;
 		b2 = b2 >> 4;
+		*/
 
-		blockTop |= (table1 << 29) | (table2 << 26) | (difference << 25) | (flip << 24);
-		blockTop |= (b1 << 20) | (b2 << 16);
-		blockTop |= (g1 << 12) | (g2 << 8);
-		blockTop |= (r1 << 4) | r2;
+		let blockTop = (bestsolns.soln1.intenTable << 29) | (bestsolns.soln0.intenTable << 26) | (bestsolns.difference << 25) | (bestsolns.flip << 24);
+		if (!bestsolns.difference) {
+			blockTop |= (bestsolns.soln1.blockB << 20) | (bestsolns.soln0.blockB  << 16);
+			blockTop |= (bestsolns.soln1.blockG << 12) | (bestsolns.soln0.blockG << 8);
+			blockTop |= (bestsolns.soln1.blockR << 4) | bestsolns.soln0.blockR;
+		} else {
+			blockTop |= (bestsolns.soln1.blockB << 19) | (bestsolns.soln0.blockB << 16);
+			blockTop |= (bestsolns.soln1.blockG << 11) | (bestsolns.soln0.blockG << 8);
+			blockTop |= (bestsolns.soln1.blockR << 3) | bestsolns.soln0.blockR;
+		}
 
 		block.writeInt32BE(blockBottom);
 		block.writeInt32BE(blockTop, 4);
@@ -499,15 +692,6 @@ class ETC1 {
 		b = this.saturate(b + pixel);
 
 		return [r, g, b];
-	}
-
-	etc1PixelIndex(baseR, baseG, baseB, r, g, b, table) {
-		const differenceR = baseR - r;
-		const differenceG = baseG - g;
-		const differenceB = baseB - b;
-		const avgDifference = this.average([differenceR, differenceG, differenceB]);
-
-		return this.closestIndex(avgDifference, ETC1_LOOK_UP_TABLE[table]);
 	}
 
 	saturate(value) {
