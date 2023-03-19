@@ -23,14 +23,13 @@ class ETC1SolutionSet {
 	constructor(flip = 0, difference = 0, soln0 = undefined, soln1 = undefined) {
 		this.flip = flip;
 		this.difference = difference;
-		// Both soln0 or soln1 have to be defined or undefined equally.
-		// We will use soln0 to determine this
-		if (soln0) {
+
+		if (soln0 && soln1) {
 			this.soln0 = soln0;
 			this.soln1 = soln1;
 		} else {
-			this.soln1 = new ETC1Solution(Number.MAX_SAFE_INTEGER);
-			this.soln0 = new ETC1Solution(Number.MAX_SAFE_INTEGER);
+			this.soln1 = new ETC1Solution(99999999);
+			this.soln0 = new ETC1Solution(99999999);
 		}
 
 	}
@@ -46,9 +45,13 @@ class ETC1Optimizer {
 		this.g = g;
 		this.b = b;
 		this.limit = limit;
-		this.baseR = this.average(r) * (limit / 256);
-		this.baseG = this.average(g) * (limit / 256);
-		this.baseB = this.average(b) * (limit / 256);
+
+		if (r && g && b) {
+			this.baseR = this.average(r) * (limit / 256);
+			this.baseG = this.average(g) * (limit / 256);
+			this.baseB = this.average(b) * (limit / 256);
+		}
+
 		this.bestSoln = new ETC1Solution(error);
 	}
 
@@ -56,15 +59,6 @@ class ETC1Optimizer {
 		const sum = array.reduce((prev, current) => prev + current, 0);
 		const average = sum / array.length;
 		return Math.round(average);
-	}
-
-	limitValue(value) {
-		if (value > this.limit) {
-			return this.limit;
-		} if (value < 0) {
-			return 0;
-		}
-		return value;
 	}
 
 	scale(r, g, b, limit) {
@@ -80,13 +74,38 @@ class ETC1Optimizer {
 		let y = [];
 		let z = [];
 
+		// TODO - Find a better way to do this?
 		for (let i = 0; i < deltas.length; i++) {
-			x.push(this.limitValue(deltas[i] + this.baseR));
-			y.push(this.limitValue(deltas[i] + this.baseG));
-			z.push(this.limitValue(deltas[i] + this.baseB));
+			const r = deltas[i] + this.baseR;
+			const g = deltas[i] + this.baseG;
+			const b = deltas[i] + this.baseB;
+
+			if (r >= 0 && r < this.limit) {
+				if (g >= 0 && g < this.limit) {
+					if (b >= 0 && b < this.limit) {
+						x.push(r);
+						y.push(g);
+						z.push(b);
+					}
+				}
+			}
 		}
 
 		return this.testUnscaledColors(x, y, z);
+	}
+
+	findExactMatches(r, g, b, modifierIndex) {
+		let solns = [];
+
+		// All color arrays should have the same length, so we'll iterate using red
+		for (let i = 0; i < r.length; i++) {
+			this.bestSoln.error = 1;
+			if (this.evaluateSolution(r[i], g[i], b[i], modifierIndex)) {
+				solns.push(this.bestSoln);
+			}
+		}
+
+		return solns;
 	}
 
 	testUnscaledColors(r, g, b) {
@@ -102,6 +121,19 @@ class ETC1Optimizer {
 			}
 		}
 		return success;
+	}
+
+	errorRGB(r, g, b) {
+		return 2 * r * r + 4 * g * g + 3 * b * b; // human perception
+	}
+
+	saturate(value) {
+		if (value > 0xff) {
+			return 0xff;
+		} if (value < 0) {
+			return 0;
+		}
+		return value;
 	}
 
 	evaluateSolution(r, g, b, intenTable) {
@@ -125,10 +157,8 @@ class ETC1Optimizer {
 		for (let i = 0; i < 8; i++) {
 			let bestJ = 0;
 			let bestError = Number.MAX_SAFE_INTEGER;
-			for (let j = 0; j < 3; j++) {
-				let error = this.r[i] - newTableR[j];
-				error += this.g[i] - newTableG[j];
-				error += this.b[i] - newTableB[j];
+			for (let j = 0; j < 4; j++) {
+				let error = this.errorRGB(this.r[i] - newTableR[j], this.g[i] - newTableG[j], this.b[i] - newTableB[j]);
 				if (error < bestError)
 				{
 					bestError = error;
@@ -143,6 +173,347 @@ class ETC1Optimizer {
 		this.bestSoln = soln;
 		return true;
 	}
+
+	distinct(r, g, b) {
+		let x = [];
+		let y = [];
+		let z = [];
+
+		// All color arrays should have the same length, so we'll iterate using red
+		for (let i = 0; i < r.length; i++) {
+			if (r.indexOf(r[i]) !== i) continue;
+			if (g.indexOf(g[i]) !== i) continue;
+			if (b.indexOf(b[i]) !== i) continue;
+
+			x.push(r[i]);
+			y.push(g[i]);
+			z.push(b[i]);
+		}
+
+		return [x, y, z];
+	}
+
+	/* TODO - This is currently broken
+	repackEtc1CompressedBlock(r, g, b) {
+		// TODO - Precompute these arrays?
+		let lookup16 = new Array(8);
+		lookup16 = lookup16.fill(new Array(256));
+
+		let lookup32 = new Array(8);
+		lookup32 = lookup32.fill(new Array(256));
+
+		let lookup16big = new Array(8);
+		lookup16big = lookup16big.fill(new Array(16));
+
+		let lookup32big = new Array(8);
+		lookup32big = lookup32big.fill(new Array(32));
+
+		for (let i = 0; i < ETC1_LOOK_UP_TABLE.length; i++) {
+			for (let j = 0; j < 16; j++) {
+				// Distinct the array
+				lookup16big[i][j] = Array.from(ETC1_LOOK_UP_TABLE[i], mod => this.saturate(j * 17 + mod));
+				lookup16big[i][j] = lookup16big[i][j].filter((value, index, array) => array.indexOf(value) === index);
+				lookup16big[i][j].forEach(k => lookup16[i][k] = true);
+			}
+
+			for (let j = 0; j < 32; j++) {
+				// Distinct the array
+				lookup32big[i][j] = Array.from(ETC1_LOOK_UP_TABLE[i], mod => this.saturate(j * 8 + j / 4 + mod));
+				lookup32big[i][j] = lookup32big[i][j].filter((value, index, array) => array.indexOf(value) === index);
+				lookup32big[i][j].forEach(k => lookup32[i][k] = true);
+			}
+		}
+
+		for (let flip = 0; flip < 2; flip++) {
+			let arrayR1 = [];
+			let arrayG1 = [];
+			let arrayB1 = [];
+
+			let arrayR2 = [];
+			let arrayG2 = [];
+			let arrayB2 = [];
+
+			if (!flip) {
+				for (let tileX = 0; tileX < 2; tileX++) {
+					for (let tileY = 0; tileY < 4; tileY++) {
+						const i = tileX * 4 + tileY;
+						const i2 = (tileX + 2) * 4 + tileY;
+
+						arrayR1.push(r[i]);
+						arrayG1.push(g[i]);
+						arrayB1.push(b[i]);
+
+						arrayR2.push(r[i2]);
+						arrayG2.push(g[i2]);
+						arrayB2.push(b[i2]);
+					}
+				}
+			} else {
+				for (let tileY = 0; tileY < 2; tileY++) {
+					for (let tileX = 0; tileX < 4; tileX++) {
+						const i = tileX * 4 + tileY;
+						const i2 = tileX * 4 + tileY + 2;
+
+						arrayR1.push(r[i]);
+						arrayG1.push(g[i]);
+						arrayB1.push(b[i]);
+
+						arrayR2.push(r[i2]);
+						arrayG2.push(g[i2]);
+						arrayB2.push(b[i2]);
+					}
+				}
+			}
+
+			let pixels1 = this.distinct(arrayR1, arrayG1, arrayB1);
+			let r1 = pixels1[0];
+			let g1 = pixels1[1];
+			let b1 = pixels1[2];
+
+			if (r1.length > 4 || g1.length > 4 || b1.length > 4) continue;
+
+			let pixels2 = this.distinct(arrayR2, arrayG2, arrayB2);
+			let r2 = pixels2[0];
+			let g2 = pixels2[1];
+			let b2 = pixels2[2];
+
+			if (r2.length > 4 || g2.length > 4 || b2.length > 4) continue;
+
+			for (let diff = 0; diff < 2; diff++) {
+				if (!diff) {
+					let tables1 = [];
+					let tables2 = [];
+					for (let i = 0; i < 8; i++) {
+						let isValid = r1.every(r => {
+							g1.every(g => {
+								b1.every(b => {
+									return lookup16[i][r] && lookup16[i][g] && lookup16[i][b];
+								});
+							});
+						});
+
+						if (isValid) {
+							tables1.push(i);
+						}
+
+						console.log("isValid1")
+						console.log(isValid)
+
+						isValid = r2.every(r => {
+							g2.every(g => {
+								b2.every(b => {
+									return lookup16[i][r] && lookup16[i][g] && lookup16[i][b];
+								});
+							});
+						});
+
+						console.log("isValid2")
+						console.log(isValid)
+
+						if (isValid) {
+							tables2.push(i);
+						}
+					}
+					if (!tables1.length) continue;
+					if (!tables2.length) continue;
+
+					const opt1 = new ETC1Optimizer(r1, g1, b1, 16, 1);
+					let soln1;
+
+					for (let ti = 0; ti < tables1.length; ti++) {
+						let rs = [];
+						let gs = [];
+						let bs = [];
+
+						for (let a = 0; a < 16; a++) {
+							const isValidR = r1.every(r => {
+								lookup16big[tables1[ti]][a].includes(r);
+							});
+
+							if (isValidR) rs.push(a);
+
+							const isValidG = g1.every(g => {
+								lookup16big[tables1[ti]][a].includes(g);
+							});
+
+							if (isValidG) gs.push(a);
+
+							const isValidB = b1.every(b => {
+								lookup16big[tables1[ti]][a].includes(b);
+							});
+
+							if (isValidB) bs.push(a);
+						}
+
+						soln1 = opt1.findExactMatches(rs, gs, bs, ETC1_LOOK_UP_TABLE[tables1[ti]]);
+
+						if (soln1[0]) break;
+					}
+
+					if (!soln1[0]) continue;
+
+					const opt2 = new ETC1Optimizer(r2, g2, b2, 16, 1);
+					for (let ti = 0; ti < tables2.length; ti++) {
+						let rs = [];
+						let gs = [];
+						let bs = [];
+
+						for (let a = 0; a < 16; a++) {
+							const isValidR = r2.every(r => {
+								lookup16big[tables2[ti]][a].includes(r);
+							});
+
+							if (isValidR) rs.push(a);
+
+							const isValidG = g2.every(g => {
+								lookup16big[tables2[ti]][a].includes(g);
+							});
+
+							if (isValidG) gs.push(a);
+
+							const isValidB = b2.every(b => {
+								lookup16big[tables2[ti]][a].includes(b);
+							});
+
+							if (isValidB) bs.push(a);
+						}
+
+						let soln2 = opt2.findExactMatches(rs, gs, bs, ETC1_LOOK_UP_TABLE[tables2[ti]]);
+
+						if (soln2[0]) {
+							const solnset = new ETC1SolutionSet(flip, diff, soln1[0], soln2[0]);
+							return solnset;
+						}
+					}
+				} else {
+					let tables1 = [];
+					let tables2 = [];
+					for (let i = 0; i < 8; i++) {
+						let isValid = r1.every(r => {
+							g1.every(g => {
+								b1.every(b => {
+									return lookup32[i][r] && lookup32[i][g] && lookup32[i][b];
+								});
+							});
+						});
+
+						if (isValid) {
+							tables1.push(i);
+						}
+
+						isValid = r2.every(r => {
+							g2.every(g => {
+								b2.every(b => {
+									return lookup32[i][r] && lookup32[i][g] && lookup32[i][b];
+								});
+							});
+						});
+
+						if (isValid) {
+							tables2.push(i);
+						}
+					}
+					if (!tables1.length) continue;
+					if (!tables2.length) continue;
+
+					const opt1 = new ETC1Optimizer(r1, g1, b1, 32, 1);
+					let solns1 = [];
+
+					for (let ti = 0; ti < tables1.length; ti++) {
+						let rs = [];
+						let gs = [];
+						let bs = [];
+
+						for (let a = 0; a < 16; a++) {
+							const isValidR = r1.every(r => {
+								lookup32big[tables1[ti]][a].includes(r);
+							});
+
+							if (isValidR) rs.push(a);
+
+							const isValidG = g1.every(g => {
+								lookup32big[tables1[ti]][a].includes(g);
+							});
+
+							if (isValidG) gs.push(a);
+
+							const isValidB = b1.every(b => {
+								lookup32big[tables1[ti]][a].includes(b);
+							});
+
+							if (isValidB) bs.push(a);
+						}
+
+						solns1.concat(opt1.findExactMatches(rs, gs, bs, ETC1_LOOK_UP_TABLE[ti]));
+					}
+
+					if (!solns1[0]) continue;
+
+					const opt2 = new ETC1Optimizer(r2, g2, b2, 32, 1);
+					for (let ti = 0; ti < tables2.length; ti++) {
+						let rs = [];
+						let gs = [];
+						let bs = [];
+
+						for (let a = 0; a < 16; a++) {
+							const isValidR = r2.every(r => {
+								lookup32big[tables2[ti]][a].includes(r);
+							});
+
+							if (isValidR) rs.push(a);
+
+							const isValidG = g2.every(g => {
+								lookup32big[tables2[ti]][a].includes(g);
+							});
+
+							if (isValidG) gs.push(a);
+
+							const isValidB = b2.every(b => {
+								lookup32big[tables2[ti]][a].includes(b);
+							});
+
+							if (isValidB) bs.push(a);
+						}
+
+						solns1.forEach(soln1 => {
+							let dr = [];
+							let dg = [];
+							let db = [];
+
+							rs.forEach(r => {
+								const d = r - soln1.blockR;
+								if (d >= -4 && d < 4) {
+									dr.push(r);
+								}
+							});
+
+							gs.forEach(g => {
+								const d = g - soln1.blockG;
+								if (d >= -4 && d < 4) {
+									dg.push(g);
+								}
+							});
+
+							bs.forEach(b => {
+								const d = b - soln1.blockB;
+								if (d >= -4 && d < 4) {
+									db.push(b);
+								}
+							});
+
+							let soln2 = opt2.findExactMatches(dr, dg, db, ETC1_LOOK_UP_TABLE[tables2[ti]]);
+
+							if (soln2[0]) {
+								const solnset = new ETC1SolutionSet(flip, diff, soln1[0], soln2[0]);
+								return solnset;
+							}
+						});
+					}
+				}
+			}
+		}
+		return null;
+	} */
 }
 
 class ETC1 {
@@ -436,12 +807,12 @@ class ETC1 {
 		const block = Buffer.alloc(8);
 
 		let bestsolns = new ETC1SolutionSet();
+		// let opt = new ETC1Optimizer();
 
 		// Special case: all colors of this block are the same
-		// TODO - Why this outputs black?
-		/*
 		if (this.allEqual(r) && this.allEqual(g) && this.allEqual(b)) {
-			// TODO - Precompute this array?
+			// TODO - This special case is taking very long to compute (>16s).
+			// Find a way to optimize this without precomputing? (This lookup has 16K values)
 			let solidColorLookup = [];
 			for (let limit = 16; limit <= 32; limit += 16) {
 				for (let modifierIndex = 0; modifierIndex < ETC1_LOOK_UP_TABLE.length; modifierIndex++) {
@@ -457,7 +828,11 @@ class ETC1 {
 								}
 								packedColors.push((Math.abs(this.saturate(c + ETC1_LOOK_UP_TABLE[modifierIndex][selector]) - color) << 8) | packedColor);
 							}
-							solidColorLookup.push(Math.min(packedColors));
+							packedColors.sort((a, b) => {
+								return a - b;
+							});
+
+							solidColorLookup.push(packedColors[0]);
 						}
 					}
 				}
@@ -497,9 +872,11 @@ class ETC1 {
 			});
 
 			bestsolns = solutionsArray[0];
-		} else {
-			*/
-		if (true) {
+		} else { /* TODO
+			const repack = opt.repackEtc1CompressedBlock(r, g, b);
+			if (repack) {
+				bestsolns = repack;
+			} else { */
 			for (let flip = 0; flip < 2; flip++) {
 				let arrayR1 = [];
 				let arrayG1 = [];
@@ -596,8 +973,8 @@ class ETC1 {
 					const i = tileX * 4 + tileY;
 					const i2 = tileY * 4 + tileX;
 
-					flipMSB |= (MSB >> i) << i2;
-					flipLSB |= (LSB >> i) << i2;
+					flipMSB |= ((MSB >> i) & 1) << i2;
+					flipLSB |= ((LSB >> i) & 1) << i2;
 				}
 			}
 
@@ -605,59 +982,7 @@ class ETC1 {
 			LSB = flipLSB;
 		}
 
-		let blockBottom = MSB | LSB << 16;
-
-		/*
-		if (!flip) {
-			for (let y = 0; y < 4; y++) {
-				for (let x = 0; x < 2; x++) {
-					const i = y * 4 + x;
-					const i2 = y * 4 + x + 2;
-
-					const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
-					const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
-
-					let MSB = index1 >> 1;
-					let LSB = index1 & 1;
-
-					blockBottom |= MSB << (i + 16) | LSB << i;
-
-					MSB = index2 >> 1;
-					LSB = index2 & 1;
-
-					blockBottom |= MSB << (i2 + 16) | LSB << i2;
-				}
-			}
-		} else {
-			for (let y = 0; y < 2; y++) {
-				for (let x = 0; x < 4; x++) {
-					const i = y * 4 + x;
-					const i2 = (y + 2) * 4 + x;
-
-					const index1 = this.etc1PixelIndex(r1, g1, b1, r[i], g[i], b[i], table1);
-					const index2 = this.etc1PixelIndex(r2, g2, b2, r[i2], g[i2], b[i2], table2);
-
-					let MSB = index1 >> 1;
-					let LSB = index1 & 1;
-
-					blockBottom |= MSB << (i + 16) | LSB << i;
-
-					MSB = index2 >> 1;
-					LSB = index2 & 1;
-
-					blockBottom |= MSB << (i2 + 16) | LSB << i2;
-				}
-			}
-		}
-
-		r1 = r1 >> 4;
-		g1 = g1 >> 4;
-		b1 = b1 >> 4;
-
-		r2 = r2 >> 4;
-		g2 = g2 >> 4;
-		b2 = b2 >> 4;
-		*/
+		let blockBottom = LSB | MSB << 16;
 
 		let blockTop = (bestsolns.soln1.intenTable << 29) | (bestsolns.soln0.intenTable << 26) | (bestsolns.difference << 25) | (bestsolns.flip << 24);
 		if (!bestsolns.difference) {
