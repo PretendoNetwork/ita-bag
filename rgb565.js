@@ -111,7 +111,7 @@ class RGB565 {
 						const r = (rgb & 0b1111100000000000) >> 8;
 						const g = (rgb & 0b0000011111100000) >> 3;
 						const b = (rgb & 0b0000000000011111) << 3;
-						const a = (this.a4[Math.floor(i / 2)] >> (4 * (i % 2)) & 0x0F) * 0x11;
+						const a = this.a4 ? (this.a4[Math.floor(i / 2)] >> (4 * (i % 2)) & 0x0F) * 0x11 : 0xFF;
 
 						const color = Jimp.rgbaToInt(r, g, b, a);
 
@@ -124,14 +124,17 @@ class RGB565 {
 		return image.getBase64Async(Jimp.MIME_PNG);
 	}
 
-	async fromImage(image) {
+	async fromImage(image, alpha) {
 		const width = image.bitmap.width;
 		const height = image.bitmap.height;
 		this.width = width;
 		this.height = height;
 
 		this.rgb565 = Buffer.alloc(width * height * 2);
-		this.a4 = Buffer.alloc(Math.floor(width * height / 2));
+
+		if (alpha) {
+			this.a4 = Buffer.alloc(Math.floor(width * height / 2));
+		}
 
 		// * Badge images are stored as rgb565 data using 8x8 tiles
 		// * Loop over the images tiles
@@ -159,12 +162,15 @@ class RGB565 {
 						r = r >> 3;
 						g = g >> 2;
 						b = b >> 3;
-						a = a >> 4 << (4 * (i % 2));
+
+						if (alpha) {
+							a = a >> 4 << (4 * (i % 2));
+							this.a4[Math.floor(i / 2)] |= a;
+						}
 
 						const color = r << 11 | g << 5 | b;
 
 						this.rgb565.writeUint16LE(color, i * 2);
-						this.a4[Math.floor(i / 2)] |= a;
 					}
 				}
 			}
