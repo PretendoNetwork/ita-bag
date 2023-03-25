@@ -74,15 +74,16 @@ const Z_VALUE_LOOKUP_TABLE = [
 */
 
 class RGB565 {
-	constructor(size, rgb565, a4) {
-		this.size = size;
+	constructor(width, height, rgb565, a4) {
+		this.width = width;
+		this.height = height;
 		this.rgb565 = rgb565;
 		this.a4 = a4;
 	}
 
 	async toPNGBase64URI() {
-		const width = this.size;
-		const height = this.size;
+		const width = this.width;
+		const height = this.height;
 
 		const image = new Jimp(width, height);
 
@@ -126,7 +127,8 @@ class RGB565 {
 	async fromImage(image) {
 		const width = image.bitmap.width;
 		const height = image.bitmap.height;
-		this.size = image.bitmap.width;
+		this.width = width;
+		this.height = height;
 
 		this.rgb565 = Buffer.alloc(width * height * 2);
 		this.a4 = Buffer.alloc(Math.floor(width * height / 2));

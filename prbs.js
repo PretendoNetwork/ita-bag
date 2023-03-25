@@ -106,8 +106,8 @@ class PRBS {
 		// * Optional images not supported atm
 
 		this.images = {
-			small: new RGB565(32, rgb5656_32x32, a4_32x32),
-			medium: new RGB565(64, rgb5656_64x64, a4_64x64)
+			small: new RGB565(32, 32, rgb5656_32x32, a4_32x32),
+			medium: new RGB565(64, 64, rgb5656_64x64, a4_64x64)
 		};
 	}
 
