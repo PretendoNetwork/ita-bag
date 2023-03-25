@@ -88,12 +88,12 @@ class RGB565 {
 
 		// * Badge images are stored as rgb565 data using 8x8 tiles
 		// * Loop over the images tiles
-		for (let tileWalkerX = 0; tileWalkerX < height / 8; tileWalkerX++) {
-			for (let tileWalkerY = 0; tileWalkerY < width / 8; tileWalkerY++) {
+		for (let tileWalkerY = 0; tileWalkerY < height / 8; tileWalkerY++) {
+			for (let tileWalkerX = 0; tileWalkerX < width / 8; tileWalkerX++) {
 
 				// * Loop over the current 8x8 tile x,y
-				for (let tileX = 0; tileX < 8; tileX++) {
-					for (let tileY = 0; tileY < 8; tileY++) {
+				for (let tileY = 0; tileY < 8; tileY++) {
+					for (let tileX = 0; tileX < 8; tileX++) {
 						// * The real x,y of the pixel about to be set
 						const x = tileX + tileWalkerX * 8;
 						const y = tileY + tileWalkerY * 8;
@@ -103,7 +103,7 @@ class RGB565 {
 						const z = Z_VALUE_LOOKUP_TABLE[tileX][tileY];
 
 						// * Actual color index
-						const i = z + (tileWalkerY * 8 * height) + (tileWalkerX * 64);
+						const i = z + (tileWalkerY * 8 * width) + (tileWalkerX * 64);
 
 						const rgb = this.rgb565.readUint16LE(i * 2);
 
@@ -121,6 +121,52 @@ class RGB565 {
 		}
 
 		return image.getBase64Async(Jimp.MIME_PNG);
+	}
+
+	async fromImage(image) {
+		const width = image.bitmap.width;
+		const height = image.bitmap.height;
+		this.size = image.bitmap.width;
+
+		this.rgb565 = Buffer.alloc(width * height * 2);
+		this.a4 = Buffer.alloc(Math.floor(width * height / 2));
+
+		// * Badge images are stored as rgb565 data using 8x8 tiles
+		// * Loop over the images tiles
+		for (let tileWalkerY = 0; tileWalkerY < height / 8; tileWalkerY++) {
+			for (let tileWalkerX = 0; tileWalkerX < width / 8; tileWalkerX++) {
+
+				// * Loop over the current 8x8 tile x,y
+				for (let tileY = 0; tileY < 8; tileY++) {
+					for (let tileX = 0; tileX < 8; tileX++) {
+						// * The real x,y of the pixel about to be set
+						const x = tileX + tileWalkerX * 8;
+						const y = tileY + tileWalkerY * 8;
+
+						// * Tile colors use a z value to calculate the index
+						// * see above code for details
+						const z = Z_VALUE_LOOKUP_TABLE[tileX][tileY];
+
+						// * Actual color index
+						const i = z + (tileWalkerY * 8 * width) + (tileWalkerX * 64);
+
+						const rgba = image.getPixelColor(x, y);
+
+						let {r, g, b, a} = Jimp.intToRGBA(rgba);
+
+						r = r >> 3;
+						g = g >> 2;
+						b = b >> 3;
+						a = a >> 4 << (4 * (i % 2));
+
+						const color = r << 11 | g << 5 | b;
+
+						this.rgb565.writeUint16LE(color, i * 2);
+						this.a4[Math.floor(i / 2)] |= a;
+					}
+				}
+			}
+		}
 	}
 }
 
