@@ -517,8 +517,9 @@ class ETC1Optimizer {
 }
 
 class ETC1 {
-	constructor(size, etc1, alpha) {
-		this.size = size;
+	constructor(width, height, etc1, alpha) {
+		this.width = width;
+		this.height = height;
 		this.etc1 = etc1;
 		this.alpha = alpha;
 	}
@@ -1063,8 +1064,8 @@ class ETC1 {
 	}
 
 	async toPNGBase64URI() {
-		const width = this.size;
-		const height = this.size;
+		const width = this.width;
+		const height = this.height;
 
 		const decoded = this.decode(this.etc1, width, height, this.alpha);
 
