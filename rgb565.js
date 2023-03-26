@@ -125,21 +125,19 @@ class RGB565 {
 	}
 
 	async fromImage(image, alpha) {
-		const width = image.bitmap.width;
-		const height = image.bitmap.height;
-		this.width = width;
-		this.height = height;
+		this.width = image.bitmap.width;
+		this.height = image.bitmap.height;
 
-		this.rgb565 = Buffer.alloc(width * height * 2);
+		this.rgb565 = Buffer.alloc(this.width * this.height * 2);
 
 		if (alpha) {
-			this.a4 = Buffer.alloc(Math.floor(width * height / 2));
+			this.a4 = Buffer.alloc(Math.floor(this.width * this.height / 2));
 		}
 
 		// * Badge images are stored as rgb565 data using 8x8 tiles
 		// * Loop over the images tiles
-		for (let tileWalkerY = 0; tileWalkerY < height / 8; tileWalkerY++) {
-			for (let tileWalkerX = 0; tileWalkerX < width / 8; tileWalkerX++) {
+		for (let tileWalkerY = 0; tileWalkerY < this.height / 8; tileWalkerY++) {
+			for (let tileWalkerX = 0; tileWalkerX < this.width / 8; tileWalkerX++) {
 
 				// * Loop over the current 8x8 tile x,y
 				for (let tileY = 0; tileY < 8; tileY++) {
@@ -153,7 +151,7 @@ class RGB565 {
 						const z = Z_VALUE_LOOKUP_TABLE[tileX][tileY];
 
 						// * Actual color index
-						const i = z + (tileWalkerY * 8 * width) + (tileWalkerX * 64);
+						const i = z + (tileWalkerY * 8 * this.width) + (tileWalkerX * 64);
 
 						const rgba = image.getPixelColor(x, y);
 
