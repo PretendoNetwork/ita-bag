@@ -4,7 +4,7 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Document</title>
+		<title>Ita Bag</title>
 
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -161,6 +161,14 @@
 			</div>
 		</template>
 
+		<div class="modal-wrapper hidden" id="export-modal">
+			<div class="modal">
+				<h1 class="modal-title">Exporting...</h1>
+				<progress id="export-progress" value="0" max="10000"></progress>
+				<p class="modal-caption" id= "export-caption">...</p>
+			</div>
+		</div>
+
 		<script type="module" src="assets/js/util.js"></script>
 		<script src="assets/js/contour.js"></script> <!-- TODO - Update to use https://github.com/d3/d3-contour maybe? -->
 		<script src="assets/js/index.js"></script>
@@ -168,5 +176,6 @@
 		<script type="module" src="assets/js/archive.js"></script>
 		<script type="module" src="assets/js/tabs.js"></script>
 		<script type="module" src="assets/js/prb-editor.js"></script>
+		<script type="module" src="assets/js/app-menu.js"></script>
 	</body>
 </html>
