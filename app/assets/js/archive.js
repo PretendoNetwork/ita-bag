@@ -58,9 +58,9 @@ export function sarcToObject(sarc, root) {
 /**
  * Packs an object into a SARC archive
  *
- * @param {object} root Object to pack
+ * @param {object} object Object to pack
  * @param {SarcFile} sarc SARC destination
- * @param {String} currentPath Path of current object to save
+ * @param {String} path Path of current object to save
  */
 export async function objectToSarc(object, sarc=new SarcFile, path='') {
 
@@ -69,20 +69,20 @@ export async function objectToSarc(object, sarc=new SarcFile, path='') {
 		let childElement;
 		let newPath;
 
-		if(path != '') { newPath = `${path}/${key}` } else {newPath = key}
+		if(path != '') { newPath = `${path}/${key}`; } else {newPath = key;}
 
 		if (value.constructor === Object) {
 			// * Value is a folder, keep iterating
 			childElement = await objectToSarc(value, sarc, newPath);
 		} else {
 			// * Value is a file, add it to the sarc
-			document.getElementById("export-caption").innerHTML = newPath;
-            await new Promise(r => setImmediate(r)); // Wait for the UI to catch up
+			document.getElementById('export-caption').innerHTML = newPath;
+			await new Promise(r => setImmediate(r)); // Wait for the UI to catch up
 
 			newPath = newPath.concat(newPath.endsWith('.xml') ? '' : '.szs');
 			sarc.addRawFile(newPath.endsWith('.xml') ? value : compressYaz0(value, 0, 1), newPath);
 			
-			document.getElementById("export-progress").value += 1;
+			document.getElementById('export-progress').value += 1;
 		}
 	}
 

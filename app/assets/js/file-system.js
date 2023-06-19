@@ -82,15 +82,15 @@ function openFile({ target }) {
  */
 export function importSARC(path) {
 	const rootSarc = new SarcFile();
-	
+
 	for (var prop in VIRTUAL_ARCHIVE) {
 		if (VIRTUAL_ARCHIVE.hasOwnProperty(prop)) {
 			delete VIRTUAL_ARCHIVE[prop];
 		}
 	}
-	
+
 	try {
-	rootSarc.loadFrom(path);
+		rootSarc.loadFrom(path);
 	} catch (error) {
 		alert(`Error loading SARC archive: ${error.message}!`);
 		return;
@@ -113,8 +113,8 @@ export function importSARC(path) {
  * @param {String} path Path to save to
  */
 export async function exportSARC(path) {
-	document.getElementById("export-progress").value = 0;
-	document.getElementById("export-progress").max = countKeys(VIRTUAL_ARCHIVE);
+	document.getElementById('export-progress').value = 0;
+	document.getElementById('export-progress').max = countKeys(VIRTUAL_ARCHIVE);
 
 	document.getElementById('export-modal').classList.remove('hidden');
 
@@ -126,14 +126,14 @@ export async function exportSARC(path) {
 
 function countKeys(t) {
 	switch (t?.constructor) {
-	  case Object:
+	case Object:
 		return Object
-		  .values(t)
-		  .reduce((r, v) => r + 1 + countKeys(v), 0)
-	  case Array:
+			.values(t)
+			.reduce((r, v) => r + 1 + countKeys(v), 0);
+	case Array:
 		return t
-		  .reduce((r, v) => r + countKeys(v), 0)
-	  default:
-		return 0
+			.reduce((r, v) => r + countKeys(v), 0);
+	default:
+		return 0;
 	}
 }
