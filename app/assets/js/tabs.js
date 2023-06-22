@@ -100,7 +100,7 @@ export async function saveCurrentTab() {
 	const selectedTab = document.querySelector('.tab.selected');
 	const selectedEditor = document.querySelector('.editor.selected');
 
-	if((selectedTab || selectedEditor) == null) { return; }
+	if ((selectedTab || selectedEditor) == null) { return; }
 	
 	const fileName = selectedEditor.getAttribute('data-for').split('/').pop();
 	const fileType = fileName.split('.').pop().toLowerCase();
