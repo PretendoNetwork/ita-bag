@@ -63,7 +63,7 @@ export async function populatePRBSTab(editor) {
 
 	ipcRenderer.on('prb-image-32-path', async (_event, path) => {
 		const image = await Jimp.read(path);
-		if (image.getWidth() !== 32 && image.getHeight() !== 32) {
+		if (image.getWidth() !== 32 || image.getHeight() !== 32) {
 			alert('Image size is not 32x32!');
 			return;
 		}
@@ -79,7 +79,7 @@ export async function populatePRBSTab(editor) {
 
 	ipcRenderer.on('prb-image-64-path', async (_event, path) => {
 		const image = await Jimp.read(path);
-		if (image.getWidth() !== 64 && image.getHeight() !== 64) {
+		if (image.getWidth() !== 64 || image.getHeight() !== 64) {
 			alert('Image size is not 64x64!');
 			return;
 		}
@@ -95,7 +95,7 @@ export async function populatePRBSTab(editor) {
 
 	ipcRenderer.on('prb-image-128-path', async (_event, path) => {
 		const image = await Jimp.read(path);
-		if (image.getWidth() !== 128 && image.getHeight() !== 128) {
+		if (image.getWidth() !== 128 || image.getHeight() !== 128) {
 			alert('Image size is not 128x128!');
 			return;
 		}
