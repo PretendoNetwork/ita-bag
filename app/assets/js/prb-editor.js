@@ -1,6 +1,9 @@
 import { pathToObjectValue } from './util.js';
 import { VIRTUAL_ARCHIVE } from './archive.js';
 
+const Jimp = require('jimp');
+const { ipcRenderer } = require('electron');
+
 const PRBS = require('../prbs'); // * Relative to the html file loading the script
 
 /**
@@ -52,9 +55,57 @@ export async function populatePRBSTab(editor) {
 			document.querySelector('.tab.selected').modified = true;
 		});
 	}
+
+	const prbButton32 = editor.querySelector('button[data-for="prb-button-32"]');
+	prbButton32.addEventListener('click', () => {
+		ipcRenderer.send('open-file', 'prb-image-32-path', { filters: [{name: 'Image', extensions: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']}]});
+	});
+
+	ipcRenderer.on('prb-image-32-path', async (_event, path) => {
+		const image = await Jimp.read(path);
+		if (image.getWidth() !== 32 || image.getHeight() !== 32) {
+			alert('Image size is not 32x32!');
+			return;
+		}
+		editor.querySelector('img[data-for="prb-image-32"]').src = path;
+		document.querySelector('.tab.selected .modified-icon').classList.add('gg-asterisk');
+		document.querySelector('.tab.selected').modified = true;
+	});
+
+	const prbButton64 = editor.querySelector('button[data-for="prb-button-64"]');
+	prbButton64.addEventListener('click', () => {
+		ipcRenderer.send('open-file', 'prb-image-64-path', { filters: [{name: 'Image', extensions: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']}]});
+	});
+
+	ipcRenderer.on('prb-image-64-path', async (_event, path) => {
+		const image = await Jimp.read(path);
+		if (image.getWidth() !== 64 || image.getHeight() !== 64) {
+			alert('Image size is not 64x64!');
+			return;
+		}
+		editor.querySelector('img[data-for="prb-image-64"]').src = path;
+		document.querySelector('.tab.selected .modified-icon').classList.add('gg-asterisk');
+		document.querySelector('.tab.selected').modified = true;
+	});
+
+	const prbButton128 = editor.querySelector('button[data-for="prb-button-128"]');
+	prbButton128.addEventListener('click', () => {
+		ipcRenderer.send('open-file', 'prb-image-128-path', { filters: [{name: 'Image', extensions: ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'gif']}]});
+	});
+
+	ipcRenderer.on('prb-image-128-path', async (_event, path) => {
+		const image = await Jimp.read(path);
+		if (image.getWidth() !== 128 || image.getHeight() !== 128) {
+			alert('Image size is not 128x128!');
+			return;
+		}
+		editor.querySelector('img[data-for="prb-image-128"]').src = path;
+		document.querySelector('.tab.selected .modified-icon').classList.add('gg-asterisk');
+		document.querySelector('.tab.selected').modified = true;
+	});
 }
 
 // TODO - Saving back to the virtual file system
 export async function savePRBSTab(editor) {
-console.log("SAVE TAB");
+	console.log('SAVE TAB');
 }

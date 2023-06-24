@@ -22,7 +22,7 @@ function createWindow() {
 	window.maximize();
 	window.loadFile('app/index.html');
 
-	handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]})
+	handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]});
 }
 
 app.whenReady().then(() => {
@@ -47,38 +47,38 @@ app.on('window-all-closed', () => {
  * @param {BrowserWindow} window // Main window
  */
 function createAppMenu(window) {
-	const menu = new Menu()
+	const menu = new Menu();
 	menu.append(new MenuItem({
-	label: 'File',
-	submenu: 
-	[{
-		id: 'save-tab',
-		label: 'Save Tab',
-		accelerator: 'CmdOrCtrl+S',
-		click: () => { window.webContents.send('save') }
-	},
-	{
-		id: 'save-all-tabs',
-		label: 'Save All Tabs',
-		accelerator: 'CmdOrCtrl+Shift+S',
-		click: () => { window.webContents.send('save-all') }
-	},
-	{
-		type: 'separator'
-	},
-	{
-		id: 'import-archive',
-		label: 'Import Archive',
-		accelerator: 'CmdOrCtrl+I',
-		click: () => { handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}) }
-	},
-	{
-		id: 'export-archive',
-		label: 'Export Archive',
-		accelerator: 'CmdOrCtrl+E',
-		click: () => { handleFileSave(window, 'export-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}) }
-	}
-	]}))
+		label: 'File',
+		submenu:
+		[{
+			id: 'save-tab',
+			label: 'Save Tab',
+			accelerator: 'CmdOrCtrl+S',
+			click: () => { window.webContents.send('save'); }
+		},
+		{
+			id: 'save-all-tabs',
+			label: 'Save All Tabs',
+			accelerator: 'CmdOrCtrl+Shift+S',
+			click: () => { window.webContents.send('save-all'); }
+		},
+		{
+			type: 'separator'
+		},
+		{
+			id: 'import-archive',
+			label: 'Import Archive',
+			accelerator: 'CmdOrCtrl+I',
+			click: () => { handleFileOpen(window, 'import-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}); }
+		},
+		{
+			id: 'export-archive',
+			label: 'Export Archive',
+			accelerator: 'CmdOrCtrl+E',
+			click: () => { handleFileSave(window, 'export-archive', { filters: [{name: 'PrizeCollection Archive', extensions: ['sarc']}]}); }
+		}
+		]}));
 	
 	menu.append(new MenuItem({
 		label: 'Debug',
@@ -98,13 +98,17 @@ function createAppMenu(window) {
 			label: 'Open Developer Tools',
 			role: 'toggleDevTools'
 		}
-	]}))
+		]}));
 
-	ipcMain.on('set-menu-item-available', (event, item, available) => {
+	ipcMain.on('set-menu-item-available', (_event, item, available) => {
 		Menu.getApplicationMenu().getMenuItemById(item).enabled = available;
-	})
+	});
 
-	Menu.setApplicationMenu(menu)
+	ipcMain.on('open-file', (_event, eventReturn, options) => {
+		handleFileOpen(window, eventReturn, options);
+	});
+
+	Menu.setApplicationMenu(menu);
 }
 
 /**
@@ -112,7 +116,7 @@ function createAppMenu(window) {
  * 
  * @param {BrowserWindow} window // Main window
  * @param {String} event // Where to send the path
- * @param {Object} // Options for the dialog
+ * @param {Object} options // Options for the dialog
  */
 async function handleFileOpen(window, event, options) {
 	const { canceled, filePaths } = await dialog.showOpenDialog(window, options);
@@ -126,7 +130,7 @@ async function handleFileOpen(window, event, options) {
  * 
  * @param {BrowserWindow} window // Main window
  * @param {String} event // Where to send the path
- * @param {Object} // Options for the dialog
+ * @param {Object} options // Options for the dialog
  */
 async function handleFileSave(window, event, options) {
 	const { canceled, filePath } = await dialog.showSaveDialog(window, options);
